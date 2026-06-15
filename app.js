@@ -164,7 +164,8 @@
     if (GENE.mim) chips.push(['OMIM', GENE.mim, URLS.omim(GENE.mim)]);
     c.innerHTML = chips.map(function (x) {
       return '<span class="chip">' + x[0] + ' <a href="' + x[2] + '" target="_blank" rel="noopener"><b>' + esc(x[1]) + '</b></a></span>';
-    }).join('') + '<span class="chip">' + META.nodeCount + ' genes · ' + META.edgeCount + ' edges · ' + esc(META.date) + '</span>';
+    }).join('') + '<span class="chip">' + META.nodeCount + ' genes · ' + META.edgeCount + ' edges</span>';
+    var bd = $('builtDate'); if (bd) bd.innerHTML = 'Built <b class="mono">' + esc(META.date) + '</b>';   // build/snapshot date (top right)
   }
 
   // ======================================================================
@@ -229,8 +230,6 @@
   // insight bar
   // ======================================================================
   function renderInsight() {
-    var s = ENGINE.synthesis(W);
-    $('insight').innerHTML = esc(s.lead);
     var src = $('insightSrc');
     if (src && !src.getAttribute('data-filled')) {           // static "what + sources" line — fill once
       var SRC = [['STRING v12', 'https://string-db.org'], ['Open Targets', 'https://platform.opentargets.org'],
@@ -801,9 +800,6 @@
   // ======================================================================
   function wireHeader() {
     var ibx = $('btnInsightClose'); if (ibx) ibx.addEventListener('click', function () { var b = $('insightBar'); if (b) b.classList.add('hidden'); });
-    $('btnReanalyze').addEventListener('click', function () { reanalyse(); renderInsight(); renderLenses(); netReady = false; renderActiveView(); renderDiscoveries(); refreshDrawer(); flash($('btnReanalyze')); });
-    $('btnHowto').addEventListener('click', openMethods);
-    $('btnLive').addEventListener('click', liveProbe);
   }
   function flash(btn) { var o = btn.innerHTML; btn.innerHTML = '<span class="k">↻</span> Re-analyzed'; setTimeout(function () { btn.innerHTML = o; }, 1100); }
 

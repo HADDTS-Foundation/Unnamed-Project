@@ -215,13 +215,15 @@ themeSummary, themeExposure, synthesis, findings, …`.
 
 ## 7. The UI (`app.js` + `index.html`)
 
-- **Header**: brand, gene ID chips, "How to read this" (methods/glossary), "Re-analyze",
-  "Live data" probe, and **⚙ How was this built** — a link to this `BUILD-PROMPT.md` on GitHub.
-  (Per-block AI copy stays on every drawer's `<pre>`; the global copy-all hook remains for automation
-  but is not a header button.)
-- **Insight bar**: the synthesis lead **plus a one-line "what it profiles + sources" caption** (top‑250
-  STRING interactors; STRING / Open Targets / Europe PMC / IntAct / ClinVar / HPO / Reactome /
-  GenAge, snapshot date, each linked). **Dismissable** via an ✕ close button.
+- **Header**: brand, gene ID chips, a **build-date chip** (the snapshot date), and **⚙ How was this
+  built?** — a link to this `BUILD-PROMPT.md` on GitHub. (Methods/glossary live in the build prompt
+  now; weights re-analyse live on slider change, so there is no separate Re-analyze/Live-data/How-to-
+  read button. Per-block AI copy stays on every drawer's `<pre>`; the copy-all hook remains for
+  automation but is not a header button.)
+- **Insight bar**: a one-line **"what it profiles + sources" caption** (top‑250 STRING interactors;
+  STRING / Open Targets / Europe PMC / IntAct / ClinVar / HPO / Reactome / GenAge, snapshot date, each
+  linked), **dismissable** via an ✕ close button. (No synthesis sentence in the bar — `synthesis()`
+  still feeds the hub AI block.)
 - **Left panel**: **Disease areas (lenses)** — the five disease lenses, then an *Overlay* divider and
   the Aging/longevity lens (toggle to recolour/filter), **Evidence weighting**
   (3 sliders: physical / literature / network), **Display limit** (how many top interactors to
