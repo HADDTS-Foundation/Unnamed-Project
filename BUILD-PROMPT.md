@@ -156,9 +156,14 @@ Associated            otherwise
 ```
 A DB-only pair must **never** be typed as a physical complex member.
 
-### 6.3 The 6 disease areas (the core design choice — read §2.4)
-Exactly six, in this order, each shown as a lens, a per-gene flag, and a findings row. **Which**
-six is editorial; **which genes** belong is decided only by the data via the area's `kind`:
+### 6.3 The 6 lenses — five disease areas + one aging/longevity overlay (read §2.4)
+Exactly six lenses, in this order, each shown as a lens, a per-gene flag, and a findings row. **Five
+are disease areas** (oncology, metabolic, neurodegeneration, CNS, neurodevelopment) — these, and only
+these, are the constellation's angular sectors. The sixth, **Aging / longevity, is NOT a disease
+area but an overlay** (`kind:aging`): it never owns a sector and is rendered as a gold halo on its
+member genes; in the left panel it is set apart from the five "Disease areas" under an *Overlay*
+divider. **Which** lenses to show is editorial; **which genes** belong is decided only by the data
+via the area's `kind`:
 
 | key | label | colour | `kind` & membership rule |
 |---|---|---|---|
@@ -210,7 +215,8 @@ themeSummary, themeExposure, synthesis, findings, …`.
   "Live data" probe, and **⧉ Copy AI Context** (copies *every* AI block — hub + each lens + all
   100 interactors — to the clipboard; same path as the per-gene Copy, no file download).
 - **Insight bar**: the synthesis lead.
-- **Left panel**: **Disease areas (lenses)** (toggle to recolour/filter), **Evidence weighting**
+- **Left panel**: **Disease areas (lenses)** — the five disease lenses, then an *Overlay* divider and
+  the Aging/longevity lens (toggle to recolour/filter), **Evidence weighting**
   (3 sliders: physical / literature / network), **Display limit** (how many top interactors to
   draw, its own section with a one-line note), **Layout** toggle, **Trace connection**.
 - **Center — four views**:
@@ -331,8 +337,8 @@ subset, under `fonts/`, relative `file://` URLs — offline-safe, **no** web `@i
 ## 11. Acceptance criteria
 
 - Opens offline from `file://` with no console errors; no network needed to function.
-- The 6 disease areas render as lenses/flags/findings; membership is provably data-driven
-  (`verify.js` membership==recomputation checks pass).
+- The five disease areas (+ the aging/longevity overlay) render as lenses/flags/findings; membership
+  is provably data-driven (`verify.js` membership==recomputation checks pass).
 - Every shown value has a working source link; the AI blocks + Copy-AI-Context produce complete,
   sourced plain text.
 - `data/verify.js` passes with **generic invariants only** (no pinned-gene assertions).

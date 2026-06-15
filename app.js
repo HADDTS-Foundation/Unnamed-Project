@@ -85,7 +85,7 @@
   // glossary tooltips (instant, body-level — never the native title=)
   // ======================================================================
   var GLOSS = {
-    'tip-lenses': ['Disease areas (lenses)', 'Six editorial focus areas. <b>Which</b> six is an editorial choice; <b>which genes</b> belong is decided only by the data — Open Targets EFO area sums, OT disease names, or the GenAge/LongevityMap bundle. Toggle a lens to recolour and filter.'],
+    'tip-lenses': ['Disease areas + aging overlay', 'Five editorial <b>disease areas</b> (oncology, metabolic, neurodegeneration, CNS, neurodevelopment) — the constellation sectors — plus an <b>Aging / longevity overlay</b>, which is not a disease but a curated GenAge ∪ LongevityMap dimension shown as a gold halo. Which areas to show is editorial; which genes belong is decided only by the data. Toggle a lens to recolour and filter.'],
     'tip-weights': ['Evidence weighting', 'The composite score is a weighted blend of <b>Physical</b> (STRING experiments + curated databases — text-mining is deliberately excluded), <b>Literature</b> (synonym-aware CTBP1 co-mention), and <b>Network</b> (partner–partner context). Sliders re-rank live.'],
     'tip-limit': ['Display limit', 'How many of the top-ranked interactors to draw in the visual views. The Table and Findings always include all 100.'],
     'tip-trace': ['Trace connection', 'Every profiled gene is a direct STRING neighbour of CTBP1, so the trace is the direct edge — no spurious indirect detour through the corepressor hub clique.'],
@@ -174,7 +174,7 @@
   function renderLenses() {
     var box = $('lensList'); box.innerHTML = '';
     var exposure = {}; ENGINE.themeExposure(W).forEach(function (t) { exposure[t.key] = t.count; });
-    ORDER.forEach(function (key) {
+    function addLens(key) {
       var T = THEMES[key];
       var b = el('button', 'lens');
       b.setAttribute('aria-pressed', state.active[key] ? 'true' : 'false');
@@ -188,7 +188,12 @@
         renderActiveView();
       });
       box.appendChild(b);
-    });
+    }
+    // the FIVE disease areas (these are the constellation sectors) …
+    ORDER.filter(function (k) { return k !== 'aging'; }).forEach(addLens);
+    // … then the aging/longevity OVERLAY, set apart — it is not a disease area
+    box.appendChild(el('div', 'lensdiv', 'Overlay'));
+    addLens('aging');
   }
 
   function wireWeights() {
@@ -574,7 +579,7 @@
         })()));
         fb.lastChild.style.borderLeftColor = fl.theme;
       });
-      box.appendChild(sec('Disease areas (memberships)', null, fb));
+      box.appendChild(sec('Area memberships', null, fb));
     }
 
     // top disease associations
@@ -802,7 +807,7 @@
       '<p class="muted" style="margin:14px 0;line-height:1.6">CTBP1 ATLAS profiles the top-100 STRING interactors of human CTBP1 and derives disease/biology connections through a transparent inference engine. Every number links to the live source that validates it; the engine treats every gene identically — no partner is special-cased.</p>' +
       sectionHTML('The composite connection score', 'A weighted blend of three sub-scores. <b>Physical</b> = clamp(STRING experiments + 0.5·curated databases) — the combined score is deliberately excluded so text-mining can\'t inflate a pair into a fake physical interaction. <b>Literature</b> = log-scaled, synonym-aware CTBP1 co-mention (ambiguous/housekeeping symbols zeroed). <b>Network</b> = summed partner–partner STRING edge weight, hub excluded. Re-weight live with the sliders.') +
       sectionHTML('Connection types', 'Core complex / Physical interactor / Literature-linked / Functional neighbour / Associated. These key off physical evidence (experiments + IntAct), never the curated-DB channel alone — a database-only pair is never called a physical complex member.') +
-      sectionHTML('The six disease areas', '<b>Which</b> six areas to show is an editorial choice; <b>which genes</b> belong is decided only by the data. Oncology / Metabolic / CNS use Open Targets EFO therapeutic-area sums; Neurodegeneration / Neurodevelopment use Open Targets disease-name matches; Aging uses the GenAge ∪ LongevityMap bundle. The test harness recomputes every membership straight from the raw data and asserts it equals the engine — a hand-placed gene would fail.') +
+      sectionHTML('Five disease areas + an aging overlay', '<b>Which</b> areas to show is an editorial choice; <b>which genes</b> belong is decided only by the data. The five <b>disease areas</b> are the constellation sectors: Oncology / Metabolic / CNS use Open Targets EFO therapeutic-area sums; Neurodegeneration / Neurodevelopment use OT disease-name matches. <b>Aging / longevity</b> is not a disease but an <b>overlay</b> (GenAge ∪ LongevityMap), shown as a gold halo on member genes — never its own sector. The test harness recomputes every membership straight from the raw data and asserts it equals the engine — a hand-placed gene would fail.') +
       sectionHTML('Provenance', 'Co-mention counts are tiered (title / title+abstract / full text) and link to the exact Europe PMC query that produced them. ClinVar counts use NCBI\'s precise clinsig filters. The ⧉ Copy buttons dump every shown value with its source URL as plain text for an LLM.') +
       sectionHTML('Sources', (META.sources || []).join(' · ') + '. Snapshot ' + META.date + '.');
     ov.appendChild(card); document.body.appendChild(ov); wireGlossary(card);
