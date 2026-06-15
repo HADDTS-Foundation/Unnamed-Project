@@ -64,20 +64,32 @@
     // classic neurodegeneration (MEMBERSHIP — precise)
     neurodegen: /alzheimer|parkinson|amyotrophic|huntington|dementia|frontotemporal|neurodegenerat|spinocerebellar ataxia|hereditary ataxia|motor neuron|lewy bod|tauopath|prion disease|multiple sclerosis|spinal muscular atroph/i,
     // neurodevelopment incl. ASD (MEMBERSHIP — precise)
-    neurodev: /autis|asperger|\bASD\b|pervasive developmental|intellectual disab|intellectual developmental|mental retard|developmental delay|global developmental|developmental and epileptic|neurodevelopment/i
+    neurodev: /autis|asperger|\bASD\b|pervasive developmental|intellectual disab|intellectual developmental|mental retard|developmental delay|global developmental|developmental and epileptic|neurodevelopment/i,
+    // additional OT-area "field" provenance regexes (examples only — membership is the EFO area-sum)
+    immune: /immun|autoimmun|inflamm|arthritis|lupus|psoriasis|colitis|crohn|inflammatory bowel|allerg|asthma|vasculit|graft|lymphoproliferat|immunodefic|sjogren|celiac|coeliac|thyroiditis/i,
+    cardio: /cardi|heart|coronary|myocard|arrhythm|atrial|ventric|aortic|vascular|hypertens|atheroscler|ischaem|ischem|stroke|aneurysm|thrombo|fibrillation|cardiomyopath|angina|\bvalve/i,
+    hematologic: /leuk[ae]mia|lymphoma|myeloma|myelodysplas|myeloprolifer|an[ae]mia|thrombocyto|neutropen|h[ae]mato|coagulat|h[ae]mophil|sickle|thalass[ae]mia|pancytopen|bone marrow|polycyth[ae]mia/i,
+    eye: /\beye|ocular|retin|macul|cornea|glaucoma|cataract|optic|vision|visual|blind|nystagmus|strabismus|ophthalm|uveitis|keratoconus|colou?r blindness/i
   };
 
   // THEMES — declared in display order. `efo` lists the EFO therapeutic-area
   // keys whose summed association score defines `ot` membership. Colours are
   // the verbatim tokens from BUILD-PROMPT §6.3.
-  var THEME_ORDER = ['oncology', 'metabolic', 'neurodegen', 'aging', 'cns', 'neurodev'];
+  // "Fields" = disease/biology lenses. The five SECTOR fields get a constellation wedge and drive a
+  // node's colour (its dominant). The rest are cross-cutting OVERLAY/FILTER fields — they filter the
+  // views but never own a wedge (aging additionally paints a gold halo). Membership rule is per `kind`.
+  var THEME_ORDER = ['oncology', 'metabolic', 'neurodegen', 'cns', 'neurodev', 'aging', 'immunity', 'cardiovascular', 'hematologic', 'eye'];
   var THEMES = {
-    oncology:   { key: 'oncology',   label: 'Oncology',                    theme: '#ff5d73', kind: 'ot',    efo: ['cancer or benign tumor'], re: RE.cancer },
-    metabolic:  { key: 'metabolic',  label: 'Metabolic disease',          theme: '#24c8a4', kind: 'ot',    efo: ['nutritional or metabolic disease', 'endocrine system disease'], re: RE.metabolic },
-    neurodegen: { key: 'neurodegen', label: 'Neurodegeneration',          theme: '#f5a623', kind: 'name',  re: RE.neurodegen },
-    aging:      { key: 'aging',      label: 'Aging / longevity',          theme: '#c8b560', kind: 'aging' },
-    cns:        { key: 'cns',        label: 'CNS / neuroscience',         theme: '#8a7bff', kind: 'ot',    efo: ['nervous system disease', 'psychiatric disorder'], re: RE.cns },
-    neurodev:   { key: 'neurodev',   label: 'Neurodevelopment (incl. ASD)', theme: '#4aa3ff', kind: 'name', re: RE.neurodev }
+    oncology:       { key: 'oncology',       label: 'Oncology',                     theme: '#ff5d73', kind: 'ot',    sector: true, efo: ['cancer or benign tumor'], re: RE.cancer },
+    metabolic:      { key: 'metabolic',      label: 'Metabolic disease',            theme: '#24c8a4', kind: 'ot',    sector: true, efo: ['nutritional or metabolic disease', 'endocrine system disease'], re: RE.metabolic },
+    neurodegen:     { key: 'neurodegen',     label: 'Neurodegeneration',            theme: '#f5a623', kind: 'name',  sector: true, re: RE.neurodegen },
+    cns:            { key: 'cns',            label: 'CNS / neuroscience',           theme: '#8a7bff', kind: 'ot',    sector: true, efo: ['nervous system disease', 'psychiatric disorder'], re: RE.cns },
+    neurodev:       { key: 'neurodev',       label: 'Neurodevelopment (incl. ASD)', theme: '#4aa3ff', kind: 'name',  sector: true, re: RE.neurodev },
+    aging:          { key: 'aging',          label: 'Aging / longevity',            theme: '#c8b560', kind: 'aging' },
+    immunity:       { key: 'immunity',       label: 'Immunity',                     theme: '#26de81', kind: 'ot',    efo: ['immune system disease'], re: RE.immune },
+    cardiovascular: { key: 'cardiovascular', label: 'Cardiovascular',               theme: '#fd79a8', kind: 'ot',    efo: ['cardiovascular disease'], re: RE.cardio },
+    hematologic:    { key: 'hematologic',    label: 'Hematologic (blood)',          theme: '#e17055', kind: 'ot',    efo: ['hematologic disease'], re: RE.hematologic },
+    eye:            { key: 'eye',            label: 'Eye / vision',                 theme: '#00cec9', kind: 'ot',    efo: ['disorder of visual system'], re: RE.eye }
   };
 
   // =========================================================================
@@ -226,10 +238,9 @@
   // dominant DISEASE area drives node colour. Aging is an overlay: excluded
   // unless the gene belongs to no disease area at all (§6.3).
   function dominantOf(flags) {
-    var disease = flags.filter(function (f) { return f.key !== 'aging'; });
-    var pool = disease.length ? disease : flags;       // fall back to aging only if alone
-    if (!pool.length) return null;
-    return pool.slice().sort(by(function (f) { return f.strength; }))[0].key;
+    var sect = flags.filter(function (f) { return THEMES[f.key].sector; });   // only SECTOR fields colour/place a node
+    if (!sect.length) return null;                                            // no sector membership → neutral (no dominant)
+    return sect.slice().sort(by(function (f) { return f.strength; }))[0].key;
   }
 
   function mechFor(node) {

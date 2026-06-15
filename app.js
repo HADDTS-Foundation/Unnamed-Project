@@ -85,7 +85,7 @@
   // glossary tooltips (instant, body-level — never the native title=)
   // ======================================================================
   var GLOSS = {
-    'tip-lenses': ['Disease areas + aging overlay', 'Five editorial <b>disease areas</b> (oncology, metabolic, neurodegeneration, CNS, neurodevelopment) — the constellation sectors — plus an <b>Aging / longevity overlay</b>, which is not a disease but a curated GenAge ∪ LongevityMap dimension shown as a gold halo. Which areas to show is editorial; which genes belong is decided only by the data. Toggle a lens to recolour and filter.'],
+    'tip-lenses': ['Fields', 'Biological / disease fields. The first five (oncology, metabolic, neurodegeneration, CNS, neurodevelopment) are the <b>constellation sectors</b> — they colour the map. The rest (aging, immunity, cardiovascular, hematologic, eye) are <b>cross-cutting overlays/filters</b> (aging also paints a gold halo). <b>Click a field to focus it</b> — every view filters to just that field; click again to reset. Which fields to show is editorial; which genes belong is decided only by the data.'],
     'tip-weights': ['Evidence weighting', 'The composite score is a weighted blend of <b>Physical</b> (STRING experiments + curated databases — text-mining is deliberately excluded), <b>Literature</b> (synonym-aware CTBP1 co-mention), and <b>Network</b> (partner–partner context). Sliders re-rank live.'],
     'tip-limit': ['Display limit', 'How many of the top-ranked interactors to draw in the visual views. The Table and Findings ignore this slider; focus a lens (left panel) to filter them by area.'],
     'tip-trace': ['Trace connection', 'Every profiled gene is a direct STRING neighbour of CTBP1, so the trace is the direct edge — no spurious indirect detour through the corepressor hub clique.'],
@@ -190,11 +190,8 @@
       });
       box.appendChild(b);
     }
-    // the FIVE disease areas (these are the constellation sectors) …
-    ORDER.filter(function (k) { return k !== 'aging'; }).forEach(addLens);
-    // … then the aging/longevity OVERLAY, set apart — it is not a disease area
-    box.appendChild(el('div', 'lensdiv', 'Overlay'));
-    addLens('aging');
+    // all Fields, flat: the five SECTOR fields first, then the overlay/filter fields (per THEME_ORDER)
+    ORDER.forEach(addLens);
   }
 
   function wireWeights() {
@@ -294,7 +291,7 @@
     // The constellation maps GENES, placed by their dominant DISEASE area. Aging is
     // an overlay (never a dominant area), so it gets NO sector — it shows as a gold
     // longevity halo on the genes that are aging members (drawn with the nodes).
-    var SECTORS = ORDER.filter(function (k) { return k !== 'aging'; });   // 5 disease sectors
+    var SECTORS = ORDER.filter(function (k) { return THEMES[k].sector; });   // the sector fields (constellation wedges)
     var sectors = {}; SECTORS.forEach(function (k, i) { sectors[k] = { a0: (i / SECTORS.length) * Math.PI * 2 - Math.PI / 2, idx: 0, n: 0 }; });
     list.forEach(function (p) { var k = p.dominant || 'oncology'; if (sectors[k]) sectors[k].n++; });
 
@@ -350,7 +347,7 @@
   function renderConstLegend() {
     var L = $('czLegend');
     // 5 disease sectors place genes; aging is a gene OVERLAY (gold halo), not a sector
-    L.innerHTML = ORDER.filter(function (k) { return k !== 'aging'; }).map(function (k) {
+    L.innerHTML = ORDER.filter(function (k) { return THEMES[k].sector; }).map(function (k) {
       return '<div class="row"><span class="sw" style="background:' + THEMES[k].theme + '"></span>' + esc(THEMES[k].label.replace(/ \(.*\)/, '')) + '</div>';
     }).join('') +
       '<div class="row" style="margin-top:3px"><span class="halo"></span>aging / longevity (overlay)</div>';
@@ -593,7 +590,7 @@
         })()));
         fb.lastChild.style.borderLeftColor = fl.theme;
       });
-      box.appendChild(sec('Area memberships', null, fb));
+      box.appendChild(sec('Field memberships', null, fb));
     }
 
     // top disease associations
@@ -713,7 +710,7 @@
     ENGINE.themeExposure(W).forEach(function (t) {
       roll.appendChild(el('div', 'disrow', '<a class="gsel" data-lens="' + t.key + '" href="#" style="width:150px;color:' + t.theme + '">' + esc(THEMES[t.key].label.replace(/ \(.*\)/, '')) + '</a>' + bar(t.count / 100) + '<span class="vl">' + t.count + '</span>'));
     });
-    box.appendChild(sec('Disease-area exposure (by gene count)', null, roll));
+    box.appendChild(sec('Field exposure (by gene count)', null, roll));
     // ids/clinvar
     var cv = GENE.clinvar;
     if (cv) box.appendChild(sec('CTBP1 clinical variants (ClinVar)', null, el('div', null,
@@ -756,7 +753,7 @@
     L.push('STRING channels: combined ' + f2(n.s.c) + ' | experiments ' + f2(n.s.e) + ' | databases ' + f2(n.s.d) + ' | text-mining ' + f2(n.s.t) + ' | co-expr ' + f2(n.s.a) + ' | fusion ' + f2(n.s.p) + ' | neighborhood ' + f2(n.s.n) + ' | co-occurrence ' + f2(n.s.f));
     L.push('  STRING: ' + URLS.string(p.sym));
     if (n.intact) L.push('IntAct: ' + n.intact.type + (n.intact.direct ? ' (DIRECT)' : '') + ' · MI-score ' + n.intact.miscore + ' · ' + n.intact.count + ' records · methods: ' + (n.intact.methods || []).join('; ') + ' · PMIDs ' + (n.intact.pmids || []).join(', ') + '  → ' + URLS.intact(p.sym));
-    if (p.flags.length) { L.push('Disease-area memberships:'); p.flags.forEach(function (fl) { L.push('  - ' + fl.label + ' (sev ' + fl.sev + ', strength ' + f2(fl.strength) + '): ' + fl.source + (fl.top && fl.top.n ? ' · e.g. ' + fl.top.n + ' (' + f2(fl.top.s) + ')' : '')); }); }
+    if (p.flags.length) { L.push('Field memberships:'); p.flags.forEach(function (fl) { L.push('  - ' + fl.label + ' (sev ' + fl.sev + ', strength ' + f2(fl.strength) + '): ' + fl.source + (fl.top && fl.top.n ? ' · e.g. ' + fl.top.n + ' (' + f2(fl.top.s) + ')' : '')); }); }
     if (p.mech.length) L.push('Mechanism tags: ' + p.mech.map(function (m) { return m.label; }).join(', '));
     if ((n.dis || []).length) { L.push('Top disease associations (Open Targets, ' + URLS.otAssoc(n.ensembl) + '):'); n.dis.slice(0, 8).forEach(function (d) { L.push('  - ' + d.n + ' (' + f2(d.s) + ')'); }); }
     L.push('Literature co-mention with CTBP1 (synonym-aware' + (n.syn && n.syn.length ? ': ' + [p.sym].concat(n.syn).join('/') : '') + '):');
@@ -788,7 +785,7 @@
     if (GENE.uniprotFunc) L.push('Function (UniProt): ' + GENE.uniprotFunc);
     if (GENE.cofactor) L.push('Cofactor: ' + GENE.cofactor);
     var syn = ENGINE.synthesis(W); L.push('Synthesis: ' + syn.lead + ' ' + syn.body);
-    L.push('Disease-area exposure (by gene count):'); ENGINE.themeExposure(W).forEach(function (t) { L.push('  - ' + THEMES[t.key].label + ': ' + t.count); });
+    L.push('Field exposure (by gene count):'); ENGINE.themeExposure(W).forEach(function (t) { L.push('  - ' + THEMES[t.key].label + ': ' + t.count); });
     if (GENE.clinvar) L.push('CTBP1 ClinVar: P/LP ' + GENE.clinvar.plp + ' · VUS ' + GENE.clinvar.vus + ' · total ' + GENE.clinvar.total + '  → ' + URLS.clinvarTotal('CTBP1'));
     (GENE.refs || []).slice(0, 6).forEach(function (r) { L.push('  · landmark: ' + r.t + ' [' + [r.a, r.j, r.y].filter(Boolean).join(', ') + '] ' + URLS.pubmedId(r.pmid)); });
     L.push('Sources: ' + (META.sources || []).join(' · ') + ' · snapshot ' + META.date);

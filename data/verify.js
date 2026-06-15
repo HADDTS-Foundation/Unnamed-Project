@@ -104,11 +104,12 @@ check('per-gene displayed areas == per-gene data recomputation (no hand placemen
 // AREA SET INTEGRITY
 // ===========================================================================
 console.log('\n=== Area set ===');
-const want = ['oncology', 'metabolic', 'neurodegen', 'aging', 'cns', 'neurodev'];
-check('exactly the 6 chosen area keys exist', setEq(Object.keys(THEMES), want) && THEME_ORDER.length === 6,
+const want = ['oncology', 'metabolic', 'neurodegen', 'cns', 'neurodev', 'aging', 'immunity', 'cardiovascular', 'hematologic', 'eye'];
+check('exactly the 10 chosen field keys exist', setEq(Object.keys(THEMES), want) && THEME_ORDER.length === want.length,
   '[' + Object.keys(THEMES).join(',') + ']');
-check('THEME_ORDER is the 6 keys in declared order', JSON.stringify(THEME_ORDER) === JSON.stringify(want));
-const removed = ['cancer', 'neuro', 'autism', 'immune', 'cardio', 'cardiovascular', 'developmental', 'development', 'metabolism'];
+check('THEME_ORDER is those keys in declared order', JSON.stringify(THEME_ORDER) === JSON.stringify(want));
+check('exactly 5 SECTOR fields (constellation wedges)', THEME_ORDER.filter(k => THEMES[k].sector).length === 5);
+const removed = ['cancer', 'neuro', 'autism', 'immune', 'cardio', 'developmental', 'development', 'metabolism'];
 check('removed/renamed legacy area keys are gone', removed.every(k => !(k in THEMES)),
   removed.filter(k => k in THEMES).join(','));
 check('aging area is kind "aging" (data-driven overlay), redox is NOT an area',

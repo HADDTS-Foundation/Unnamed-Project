@@ -163,23 +163,29 @@ Associated            otherwise
 ```
 A DB-only pair must **never** be typed as a physical complex member.
 
-### 6.3 The 6 lenses — five disease areas + one aging/longevity overlay (read §2.4)
-Exactly six lenses, in this order, each shown as a lens, a per-gene flag, and a findings row. **Five
-are disease areas** (oncology, metabolic, neurodegeneration, CNS, neurodevelopment) — these, and only
-these, are the constellation's angular sectors. The sixth, **Aging / longevity, is NOT a disease
-area but an overlay** (`kind:aging`): it never owns a sector and is rendered as a gold halo on its
-member genes; in the left panel it is set apart from the five "Disease areas" under an *Overlay*
-divider. **Which** lenses to show is editorial; **which genes** belong is decided only by the data
-via the area's `kind`:
+### 6.3 The fields — five SECTOR fields + cross-cutting overlay/filter fields (read §2.4)
+Ten **fields** (biology/disease lenses), in this order, each shown as a lens, a per-gene flag, and a
+findings row. The **first five are SECTOR fields** (oncology, metabolic, neurodegeneration, CNS,
+neurodevelopment) — these, and only these (`sector:true`), are the constellation's angular wedges and
+decide a node's colour (its *dominant* field). The rest are **cross-cutting overlay/filter fields**:
+they never own a wedge — they filter *every* view, and **Aging** additionally paints a gold halo on
+its members. In the left panel all ten sit in one flat **"Fields"** list (no divider). **Which**
+fields to show is editorial; **which genes** belong is decided only by the data via the field's
+`kind` (`ot` = EFO area-sum > 0.15, `name` = OT disease-name match, `aging` = GenAge ∪ LongevityMap).
+Adding/removing an `ot` field is just a `THEMES` entry (EFO key + threshold) — no engine logic.
 
-| key | label | colour | `kind` & membership rule |
-|---|---|---|---|
-| `oncology` | **Oncology** | `#ff5d73` | `ot` — Open Targets EFO area sum `"cancer or benign tumor" > 0.15` |
-| `metabolic` | **Metabolic disease** | `#24c8a4` | `ot` — EFO `"nutritional or metabolic disease" + "endocrine system disease" > 0.15` |
-| `neurodegen` | **Neurodegeneration** | `#f5a623` | `name` — gene's OT disease names match Alzheimer/Parkinson/ALS/Huntington/dementia/… |
-| `aging` | **Aging / longevity** | `#c8b560` | `aging` — `node.aging` present (GenAge ∪ LongevityMap) |
-| `cns` | **CNS / neuroscience** | `#8a7bff` | `ot` — EFO `"nervous system disease" + "psychiatric disorder" > 0.15` |
-| `neurodev` | **Neurodevelopment (incl. ASD)** | `#4aa3ff` | `name` — OT disease names match autism/ASD + intellectual disability + developmental delay + developmental & epileptic encephalopathy |
+| key | label | colour | sector? | `kind` & membership rule |
+|---|---|---|---|---|
+| `oncology` | **Oncology** | `#ff5d73` | ✓ | `ot` — EFO sum `"cancer or benign tumor" > 0.15` |
+| `metabolic` | **Metabolic disease** | `#24c8a4` | ✓ | `ot` — EFO `"nutritional or metabolic disease" + "endocrine system disease" > 0.15` |
+| `neurodegen` | **Neurodegeneration** | `#f5a623` | ✓ | `name` — OT disease names match Alzheimer/Parkinson/ALS/Huntington/dementia/… |
+| `cns` | **CNS / neuroscience** | `#8a7bff` | ✓ | `ot` — EFO `"nervous system disease" + "psychiatric disorder" > 0.15` |
+| `neurodev` | **Neurodevelopment (incl. ASD)** | `#4aa3ff` | ✓ | `name` — OT names match autism/ASD + intellectual disability + developmental delay + DEE |
+| `aging` | **Aging / longevity** | `#c8b560` | — | `aging` — `node.aging` present (GenAge ∪ LongevityMap); also a gold halo |
+| `immunity` | **Immunity** | `#26de81` | — | `ot` — EFO `"immune system disease" > 0.15` |
+| `cardiovascular` | **Cardiovascular** | `#fd79a8` | — | `ot` — EFO `"cardiovascular disease" > 0.15` |
+| `hematologic` | **Hematologic (blood)** | `#e17055` | — | `ot` — EFO `"hematologic disease" > 0.15` |
+| `eye` | **Eye / vision** | `#00cec9` | — | `ot` — EFO `"disorder of visual system" > 0.15` |
 
 Rules:
 - **Disease-name floor** (applied uniformly, suppresses noise): a disease counts if `s ≥ 0.18`,
@@ -230,9 +236,10 @@ from (every source linked), and *how it was built* — shown above the views, be
   STRING / Open Targets / Europe PMC / IntAct / ClinVar / HPO / Reactome / GenAge, snapshot date, each
   linked), **dismissable** via an ✕ close button. (No synthesis sentence in the bar — `synthesis()`
   still feeds the hub AI block.)
-- **Left panel**: **Disease areas (lenses)** — the five disease lenses, then an *Overlay* divider and
-  the Aging/longevity lens — **click an area to focus it** (every view filters to just that area;
-  click the focused lens again to reset; the Findings area-chips mirror this), **Evidence weighting**
+- **Left panel**: **Fields (lenses)** — one flat list of all ten fields (five sector fields, then
+  aging / immunity / cardiovascular / hematologic / eye). **Click a field to focus it** (every view
+  filters to just that field; click the focused lens again to reset; the Findings area-chips mirror
+  this), **Evidence weighting**
   (3 sliders: physical / literature / network), **Display limit** (how many top interactors to
   draw, its own section with a one-line note), **Layout** toggle, **Trace connection**.
 - **Center — four views**:
@@ -305,7 +312,7 @@ Run the **exact** `engine.js` against `app-data.js` and assert **generic invaria
 - **Anti-bias core**: recompute each area's membership *straight from the raw data* (using the
   same EFO areas / disease-name regex / GenAge bundle) and assert it **equals** the engine's
   members. If a gene were hand-placed, this fails.
-- Exactly the 6 chosen area keys exist; removed/renamed areas are gone.
+- Exactly the 10 chosen field keys exist (exactly 5 are `sector` fields); removed/renamed keys gone.
 - Per-gene **displayed areas == lens membership == flags** (consistent everywhere).
 - Every disease-area flag cites a real OT disease from the gene's own associations; every aging
   flag cites GenAge/LongevityMap evidence.
