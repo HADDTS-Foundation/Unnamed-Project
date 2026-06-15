@@ -221,7 +221,9 @@ themeSummary, themeExposure, synthesis, findings, …`.
   4. **Findings** — every (gene × area) membership, filterable by area chip, each row sourced
      (OT disease+score, or GenAge/LongevityMap for aging).
 - **Right drawer** — three context-aware modes: gene dossier, disease-lens panel, CTBP1 hub
-  dossier. A gene dossier shows: connection meters, STRING channel bars, IntAct, **Disease areas**
+  dossier. A **disease-lens panel** shows the area's membership rule, its member genes ranked by
+  strength, and — for the **Aging/longevity** lens only — the curated, ortholog-aware reading list
+  (`gene.agingRefs`, §8) clearly labelled as such. A gene dossier shows: connection meters, STRING channel bars, IntAct, **Disease areas**
   (membership + provenance, area-coloured, no alarm icon), top disease associations, Literature
   (tiered co-mention rows linking to the exact Europe PMC query + the actual papers — no
   sub-heading over the paper list), Clinical variants (ClinVar), Clinical phenotypes (HPO), Pathways
@@ -251,8 +253,16 @@ themeSummary, themeExposure, synthesis, findings, …`.
   title/abstract, fall back to full text), not a bare strict-symbol query.
 - **Stop-listed / housekeeping symbols** (`IMPACT, GAPDH, TBP, ACTB, B2M`) show an "ambiguous /
   house-keeping" caveat and are excluded from the literature score.
-- Aging-related literature for CTBP1 is ortholog-aware (CtBP1 / CTBP‑1 / ctbp‑1) and lives in the
-  Aging/longevity lens, clearly labelled as a curated reading list.
+- **Aging/longevity literature for CTBP1 is ortholog-aware** (CtBP1 / CTBP‑1 / ctbp‑1), bundled as
+  `gene.agingRefs`, and **rendered inside the Aging/longevity lens dossier** (the disease‑lens panel
+  in the right drawer) — clearly labelled as a *curated reading list, not a discovery claim*. It is
+  the one place a partner-gene lens carries hub-level CTBP1 papers, because a human‑only `"CTBP1"`
+  co-mention search structurally misses the model-organism orthologue work. The list **must include**
+  the landmark *C. elegans* `ctbp‑1` life‑span paper: Chen S, Whetstine JR, Ghosh S, Hanover JA,
+  Gali RR, Grosu P, Shi Y. "The conserved NAD(H)-dependent corepressor CTBP‑1 regulates
+  *Caenorhabditis elegans* life span." *Proc Natl Acad Sci U S A.* 2009;106(5):1496‑1501.
+  **PMID 19164523 · PMCID PMC2635826 · DOI 10.1073/pnas.0802674106.** (This is a curation directive
+  for the data/UI, not a test assertion — §9 still forbids the harness from pinning any paper.)
 
 ---
 

@@ -647,6 +647,17 @@
       lb.appendChild(el('div', 'disrow', '<a class="gsel sym" data-sym="' + p.sym + '" href="#" style="width:84px">' + esc(p.sym) + '</a>' + bar(fl.strength) + '<span class="vl">' + f2(fl.strength) + '</span>'));
     });
     box.appendChild(sec('Members (by strength)', null, lb));
+    // The Aging/longevity lens additionally carries CTBP1's curated, ortholog-aware
+    // reading list (CtBP1 / CTBP-1 / ctbp-1) — incl. the C. elegans ctbp-1 life-span
+    // paper a human-only "CTBP1" literature search misses. (BUILD-PROMPT §8)
+    if (key === 'aging' && (GENE.agingRefs || []).length) {
+      var ab = el('div');
+      ab.appendChild(el('div', 'muted', '<div style="font-size:11.5px;line-height:1.45;margin-bottom:8px">Curated CTBP1 longevity / redox literature, ortholog-aware (CtBP1 · CTBP-1 · ctbp-1) — papers a human-only “CTBP1” search misses. A reading list, not a discovery claim.</div>'));
+      GENE.agingRefs.forEach(function (r) {
+        ab.appendChild(el('div', 'paper', '<div class="t"><a href="' + URLS.pubmedId(r.pmid) + '" target="_blank" rel="noopener">' + esc(r.t) + '</a></div><div class="m">' + esc([r.a, r.j, r.y].filter(Boolean).join(' · ')) + (r.c ? ' · ' + r.c + ' cites' : '') + ' · <span class="mono">PMID ' + esc(r.pmid) + '</span></div>'));
+      });
+      box.appendChild(sec('Aging / longevity reading list (curated, ortholog-aware)', null, ab));
+    }
     box.appendChild(aiBlock('AI context — ' + T.label + ' lens', aiForLens(key)));
     return box;
   }
@@ -732,6 +743,10 @@
     var members = analysis.filter(function (p) { return p.themes[key] !== undefined; }).sort(function (a, b) { return b.themes[key] - a.themes[key]; });
     var L = ['CTBP1 ATLAS — disease lens: ' + T.label, 'Membership rule: ' + ruleLong(T).replace(/<[^>]+>/g, ''), members.length + ' member genes (by strength):'];
     members.forEach(function (p) { var fl = p.flags.filter(function (x) { return x.key === key; })[0]; L.push('  - ' + p.sym + ' (strength ' + f2(fl.strength) + ', sev ' + fl.sev + '): ' + fl.source); });
+    if (key === 'aging' && (GENE.agingRefs || []).length) {
+      L.push('Curated CTBP1 aging/longevity reading list (ortholog-aware — CtBP1 / CTBP-1 / ctbp-1):');
+      GENE.agingRefs.forEach(function (r) { L.push('  · ' + (r.t || ('PMID ' + r.pmid)) + ' [' + [r.a, r.j, r.y].filter(Boolean).join(', ') + '] PMID ' + r.pmid + '  ' + URLS.pubmedId(r.pmid)); });
+    }
     return L.join('\n');
   }
   function aiForHub() {
