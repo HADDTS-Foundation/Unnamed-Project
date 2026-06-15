@@ -1,6 +1,6 @@
 import urllib.request, urllib.parse, json
 part=sorted(json.load(open('data/string_partners_full.json')),key=lambda x:-x['score'])
-nodes=['CTBP1']+[x['preferredName_B'] for x in part[:100]]
+nodes=['CTBP1']+[x['preferredName_B'] for x in part[:250]]   # neighborhood size (was 100)
 # POST to STRING network endpoint (identifiers newline-separated)
 data=urllib.parse.urlencode({'identifiers':'\r'.join(nodes),'species':'9606','required_score':'400'}).encode()
 req=urllib.request.Request('https://string-db.org/api/json/network',data=data,method='POST')

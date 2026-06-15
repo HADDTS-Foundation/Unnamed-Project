@@ -23,7 +23,7 @@ def mygene(syms):
 
 part=json.load(open('data/string_partners_full.json'))
 ranked=sorted(part,key=lambda x:-x['score'])
-top=['CTBP1']+[x['preferredName_B'] for x in ranked[:90]]
+top=['CTBP1']+[x['preferredName_B'] for x in ranked[:250]]   # neighborhood size (was 90)
 mg=_try(lambda: mygene(top))
 sym2ens={'CTBP1':'ENSG00000159692'}
 for r in mg:

@@ -19,7 +19,7 @@ def mygene(syms):
 
 out=json.load(open('data/enrichment.json'))
 part=sorted(json.load(open('data/string_partners_full.json')),key=lambda x:-x['score'])
-top=['CTBP1']+[x['preferredName_B'] for x in part[:100]]
+top=['CTBP1']+[x['preferredName_B'] for x in part[:250]]   # neighborhood size (was 100)
 need=[s for s in top if s not in out or out.get(s,{}).get('ot_err') or out.get(s,{}).get('litCTBP1')=='ERR']
 print('need to (re)enrich:',need)
 mg=_try(lambda: mygene([s for s in need if s!='CTBP1']))

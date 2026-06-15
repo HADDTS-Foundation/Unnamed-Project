@@ -129,6 +129,10 @@ All reachable without keys. Each pipeline step parses `app-data.js` via
 
 Pipeline order (each rewrites `app-data.js`): `fetch_core → enrich → topup → netfetch → build_data →
 refs → diseases → evidence → annotate → genage → (fix-ups)`. Network steps must be idempotent.
+`data/run_all.py` drives these in order (with a snapshot backup + `--from <step>` resume). The
+neighborhood size is `TOPN` in `build_data.py` (with matching `[:N]` slices in
+`enrich`/`topup`/`netfetch`) — set to **250**; run `run_all.py` (needs network — a few thousand live
+API calls) to regenerate the bundled snapshot at that size.
 
 ---
 

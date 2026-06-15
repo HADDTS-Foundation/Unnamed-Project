@@ -1,4 +1,4 @@
-import json, re
+import json, re, time
 def load(f): return json.load(open(f))
 partsF=sorted(load('data/string_partners_full.json'),key=lambda x:-x['score'])
 enr=load('data/enrichment.json')
@@ -7,7 +7,7 @@ up=load('data/uniprot.json')
 mg=load('data/mygene.json')
 otc=load('data/ot_ctbp1.json')['data']['target']
 
-TOPN=100
+TOPN=250   # top-N STRING interactors to profile (was 100)
 keep=['CTBP1']+[x['preferredName_B'] for x in partsF[:TOPN]]
 keepset=set(keep)
 # CTBP1-centric channel scores
@@ -98,7 +98,7 @@ gene={
  'tract':[x['label'] for x in otc.get('tractability',[]) if x['value']],
 }
 data={'gene':gene,'nodes':nodes,'edges':edges,
- 'meta':{'date':'2026-06-13','species':'Homo sapiens (9606)','neighborhood':TOPN,
+ 'meta':{'date':time.strftime('%Y-%m-%d'),'species':'Homo sapiens (9606)','neighborhood':TOPN,
    'sources':['STRING v12 (string-db.org)','Open Targets Platform v4','Europe PMC','MyGene.info','UniProtKB Q13363','NCBI Gene 1487'],
    'channelLegend':{'e':'Experiments','d':'Curated DBs','t':'Text-mining','a':'Co-expression','p':'Gene fusion','n':'Neighborhood','f':'Co-occurrence'},
    'edgeCount':len(edges),'nodeCount':len(nodes)+1}}
