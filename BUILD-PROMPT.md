@@ -23,12 +23,15 @@ Think "institutional modernist" bioinformatics console: dense, disciplined, auth
 
 1. **Offline‑first.** The app opens by double-clicking `index.html` (a `file://` page) with **no
    build step, no bundler, no framework, no network calls at load**. All data is bundled in a JS
-   file. Links inside the app point to *live* sources for validation, but the app never needs them
-   to run. (One optional, user-triggered "Live data" button may probe two APIs to confirm the
-   snapshot is current; it must degrade gracefully when offline/CORS-blocked.)
-2. **Everything is sourced.** Every count, score, flag, interaction, pathway, phenotype and paper
-   must carry a click-through to the exact live query/record that validates it. No unsourced
-   numbers. No invented claims. State values plainly; never editorialise or round away precision.
+   file. Links inside the app point to *live* sources for validation — **user-triggered, never at
+   load** — but the app never needs them to run.
+2. **Everything is sourced — and provenance comes first.** Every count, score, flag, interaction,
+   pathway, phenotype and paper must carry a click-through to the exact live query/record that
+   validates it. No unsourced numbers. No invented claims. State values plainly; never editorialise
+   or round away precision. **Surface the provenance up-front, not buried:** the insight banner (top,
+   above the views) states exactly *what* the tool profiles and lists *every* data source as a link,
+   and the header's primary action is **"How was this built?"** (a link to this brief). A user should
+   see the sources and the method *before* trusting a number — not have to hunt for them.
 3. **No gene is ever special-cased.** The engine receives only raw evidence and treats every gene
    identically. No partner symbol may appear in a scoring branch. The *only* gene-ish tokens
    allowed in the engine are: the subject hub `CTBP1`, a documented literature stop-list
@@ -214,6 +217,9 @@ themeSummary, themeExposure, synthesis, findings, …`.
 ---
 
 ## 7. The UI (`app.js` + `index.html`)
+
+The **header + insight bar** form a *provenance-first strip* — *what* the data is, *where* it comes
+from (every source linked), and *how it was built* — shown above the views, before any number.
 
 - **Header**: brand, gene ID chips, a **build-date chip** (the snapshot date), and **⚙ How was this
   built?** — a link to this `BUILD-PROMPT.md` on GitHub. (Methods/glossary live in the build prompt
