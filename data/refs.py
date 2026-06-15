@@ -19,7 +19,7 @@ PMC = 'https://www.ebi.ac.uk/europepmc/webservices/rest/search?'
 HERE = os.path.dirname(os.path.abspath(__file__))
 APP = os.path.join(HERE, '..', 'app-data.js')
 
-def _try(fn, n=3, base=0.7):
+def _try(fn, n=6, base=0.8):
     for k in range(n):
         try: return fn()
         except Exception:

@@ -204,6 +204,7 @@
       });
     });
     var lim = $('displayLimit');
+    lim.max = analysis.length; lim.value = analysis.length; state.limit = analysis.length; $('limV').textContent = analysis.length;   // scale to the actual neighborhood
     lim.addEventListener('input', function () { state.limit = parseInt(lim.value, 10); $('limV').textContent = state.limit; renderActiveView(); });
     $('layoutToggle').addEventListener('click', function (e) {
       var b = e.target.closest('button[data-layout]'); if (!b) return;
@@ -801,7 +802,7 @@
     var card = el('div'); card.style.cssText = 'max-width:760px;max-height:84vh;overflow:auto;background:var(--surface);border:1px solid var(--outline);border-radius:var(--r-lg);box-shadow:var(--shadow);padding:26px 30px';
     card.innerHTML =
       '<div style="display:flex;align-items:center"><h2 style="font-size:22px">How to read this</h2><button class="btn sm" style="margin-left:auto" id="mClose">Close ✕</button></div>' +
-      '<p class="muted" style="margin:14px 0;line-height:1.6">CTBP1 ATLAS profiles the top-100 STRING interactors of human CTBP1 and derives disease/biology connections through a transparent inference engine. Every number links to the live source that validates it; the engine treats every gene identically — no partner is special-cased.</p>' +
+      '<p class="muted" style="margin:14px 0;line-height:1.6">CTBP1 ATLAS profiles the top ' + META.neighborhood + ' STRING interactors of human CTBP1 and derives disease/biology connections through a transparent inference engine. Every number links to the live source that validates it; the engine treats every gene identically — no partner is special-cased.</p>' +
       sectionHTML('The composite connection score', 'A weighted blend of three sub-scores. <b>Physical</b> = clamp(STRING experiments + 0.5·curated databases) — the combined score is deliberately excluded so text-mining can\'t inflate a pair into a fake physical interaction. <b>Literature</b> = log-scaled, synonym-aware CTBP1 co-mention (ambiguous/housekeeping symbols zeroed). <b>Network</b> = summed partner–partner STRING edge weight, hub excluded. Re-weight live with the sliders.') +
       sectionHTML('Connection types', 'Core complex / Physical interactor / Literature-linked / Functional neighbour / Associated. These key off physical evidence (experiments + IntAct), never the curated-DB channel alone — a database-only pair is never called a physical complex member.') +
       sectionHTML('Five disease areas + an aging overlay', '<b>Which</b> areas to show is an editorial choice; <b>which genes</b> belong is decided only by the data. The five <b>disease areas</b> are the constellation sectors: Oncology / Metabolic / CNS use Open Targets EFO therapeutic-area sums; Neurodegeneration / Neurodevelopment use OT disease-name matches. <b>Aging / longevity</b> is not a disease but an <b>overlay</b> (GenAge ∪ LongevityMap), shown as a gold halo on member genes — never its own sector. The test harness recomputes every membership straight from the raw data and asserts it equals the engine — a hand-placed gene would fail.') +

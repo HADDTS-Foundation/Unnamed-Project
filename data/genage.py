@@ -18,12 +18,24 @@ GENAGE = 'https://genomics.senescence.info/genes/human_genes.zip'
 LONGEV = 'https://genomics.senescence.info/longevity/longevity_genes.zip'
 
 def fetch_csv(url):
-    z = zipfile.ZipFile(io.BytesIO(urllib.request.urlopen(url, timeout=60).read()))
-    fn = [n for n in z.namelist() if n.endswith('.csv')][0]
-    return list(csv.reader(io.TextIOWrapper(z.open(fn), 'utf-8')))
+    # Resilient: HAGR (genomics.senescence.info) intermittently returns 415/HTML for these .zip
+    # endpoints. On any failure return None so the caller can preserve existing node.aging rather
+    # than crash the whole pipeline or wipe aging membership.
+    try:
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        z = zipfile.ZipFile(io.BytesIO(urllib.request.urlopen(req, timeout=60).read()))
+        fn = [n for n in z.namelist() if n.endswith('.csv')][0]
+        return list(csv.reader(io.TextIOWrapper(z.open(fn), 'utf-8')))
+    except Exception as ex:
+        print('  WARNING: HAGR fetch failed for %s (%s)' % (url, str(ex)[:60]))
+        return None
 
 # ---- GenAge human: curated ageing genes ----
 g_rows = fetch_csv(GENAGE)
+l_rows0 = fetch_csv(LONGEV)
+if g_rows is None or l_rows0 is None:
+    print('  HAGR unavailable — leaving existing node.aging untouched (skipping aging refresh).')
+    raise SystemExit(0)
 g_hdr = g_rows[0]
 ci = {c.lower().strip(): i for i, c in enumerate(g_hdr)}
 SYM, WHY, GID = ci.get('symbol'), ci.get('why'), ci.get('genage id')
@@ -34,7 +46,7 @@ for r in g_rows[1:]:
 print('GenAge human genes:', len(genage))
 
 # ---- LongevityMap: human longevity-association studies (keep SIGNIFICANT only) ----
-l_rows = fetch_csv(LONGEV)
+l_rows = l_rows0   # already fetched above (with the GenAge guard)
 l_hdr = l_rows[0]
 li = {c.lower().strip(): i for i, c in enumerate(l_hdr)}
 GI, AI, PI = li.get('gene(s)'), li.get('association'), li.get('pubmed')

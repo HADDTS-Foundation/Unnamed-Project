@@ -9,7 +9,7 @@
 
 ## 1. Mission
 
-Build **CTBP1 ATLAS** — a self-contained, offline, single-page web app that profiles the **top‑100
+Build **CTBP1 ATLAS** — a self-contained, offline, single-page web app that profiles the **top‑250
 STRING interactors of the human gene CTBP1** and derives their biological / disease connections
 through a **transparent inference engine**. It is a research instrument for a working scientist,
 not a marketing demo: every number shown must be traceable to a public source, and the engine must
@@ -86,7 +86,7 @@ Bundle a single JSON object, minified (`json.dumps(data, separators=(',',':'))`)
     refs:[{pmid,t,a,y,j,c},…],    // landmark CTBP1 papers
     agingRefs:[…], mim
   },
-  nodes:[ {                       // 100 partners, each:
+  nodes:[ {                       // up to ~250 partners, each:
     sym, name, ensembl, entrez, uniprot, mim, rank,
     s:{ c,e,d,t,a,p,n,f },        // STRING combined + 7 channel scores (0–1)
     lit, dz, tract:[…],
@@ -116,7 +116,7 @@ All reachable without keys. Each pipeline step parses `app-data.js` via
 
 | Source | Provides | Notes / gotchas |
 |---|---|---|
-| **STRING v12** | the 100-gene neighbourhood, 7 channel scores, partner↔partner edges | top‑100 by combined score is a stated curation choice |
+| **STRING v12** | the ~250-gene neighbourhood, 7 channel scores, partner↔partner edges | top‑250 by combined score is a stated curation choice; nodes lacking a resolvable Ensembl+Entrez are dropped (so the bundle holds ≤250) |
 | **Open Targets v4** (GraphQL) | per-gene disease associations (top‑20), EFO therapeutic-area aggregation, tractability, function descriptions | `areas` = sum of association score per `therapeuticAreas` entry |
 | **IntAct** (EBI REST: `ebi.ac.uk/intact/ws/interaction/findInteractions/CTBP1`) | curated experimental interactions: type (incl. *direct interaction*), detection method, PMID, MI-score | PSICQUIC is retired — use this REST ws; keep human–human only |
 | **Europe PMC** | tiered, synonym-aware co-mention counts (title / title+abstract / full-text) + the actual papers | see §8 for the exact query rules |
@@ -217,7 +217,7 @@ themeSummary, themeExposure, synthesis, findings, …`.
 
 - **Header**: brand, gene ID chips, "How to read this" (methods/glossary), "Re-analyze",
   "Live data" probe, and **⧉ Copy AI Context** (copies *every* AI block — hub + each lens + all
-  100 interactors — to the clipboard; same path as the per-gene Copy, no file download).
+  interactors — to the clipboard; same path as the per-gene Copy, no file download).
 - **Insight bar**: the synthesis lead.
 - **Left panel**: **Disease areas (lenses)** — the five disease lenses, then an *Overlay* divider and
   the Aging/longevity lens (toggle to recolour/filter), **Evidence weighting**

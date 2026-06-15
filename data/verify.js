@@ -244,7 +244,9 @@ check('Entrez present wherever phenotypes exist (HPO is keyed by NCBIGene)',
 // meta sanity
 check('meta declares the 6 STRING channel legend keys (e,d,t,a,p,n,f)',
   ['e', 'd', 't', 'a', 'p', 'n', 'f'].every(k => D.meta.channelLegend && D.meta.channelLegend[k]));
-check('snapshot profiles exactly 100 partners', NODES.length === 100);
+check('node count matches meta.neighborhood and is a substantial neighborhood (>= 200)',
+  NODES.length === D.meta.neighborhood && NODES.length >= 200, NODES.length + ' nodes vs meta.neighborhood ' + D.meta.neighborhood);
+check('meta.nodeCount == partners + 1 hub', D.meta.nodeCount === NODES.length + 1, D.meta.nodeCount + ' vs ' + (NODES.length + 1));
 
 // ===========================================================================
 console.log('\n' + (fail === 0 ? '✓ ' : '✗ ') + pass + '/' + (pass + fail) + ' checks passed' + (fail ? ('  (' + fail + ' FAILED)') : ''));

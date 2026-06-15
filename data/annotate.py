@@ -20,7 +20,7 @@ EUTILS = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi'
 PLP = '(clinsig_pathogenic[Filter] OR clinsig_likely_path[Filter])'
 VUS = 'clinsig_vus[Filter]'
 
-def _try(fn, n=3, base=0.6):
+def _try(fn, n=6, base=0.8):
     for k in range(n):
         try: return fn()
         except Exception:
@@ -77,22 +77,25 @@ REACTOME_UMBRELLA = {x.upper() for x in [
     'Cellular responses to stress', 'Post-translational protein modification',
     'Transport of small molecules', 'Programmed Cell Death']}
 
-def reactome_pathways(uniprot, cap=5):
-    """Pathways a protein participates in, from Reactome's OWN ContentService (by UniProt accession).
-    These are the specific leaf pathways the protein maps to — unlike MyGene's flat reactome list,
-    which mixes in broad umbrellas in an arbitrary order and so surfaced unrepresentative top-5s
-    (e.g. MDM2 read as synaptic/neuronal instead of its TP53-regulation / senescence pathways)."""
-    if not uniprot: return []
-    try:
-        j = _try(lambda: json.load(urllib.request.urlopen(
-            'https://reactome.org/ContentService/data/mapping/UniProt/%s/pathways?species=9606' % uniprot, timeout=30)))
-    except Exception:
-        return []
-    if not isinstance(j, list): return []
+def reactome_pathways(uniprot, cap=5, fallback=None):
+    """Leaf pathways from Reactome's ContentService (preferred — specific, not broad umbrellas).
+    fail-FAST (1 attempt, no retry-storm): Reactome's mapping endpoint can 5xx, and retrying it 6x
+    wasted ~12s/gene. On any failure/empty, fall back to MyGene's reactome list (lower quality, so
+    umbrella-filtered) so pathways stay populated when the ContentService endpoint is down."""
     out = []
-    for p in j:
-        nm = p.get('displayName')
-        if nm and nm not in out and nm.upper() not in REACTOME_UMBRELLA: out.append(nm)
+    if uniprot:
+        try:
+            j = _try(lambda: json.load(urllib.request.urlopen(
+                'https://reactome.org/ContentService/data/mapping/UniProt/%s/pathways?species=9606' % uniprot, timeout=20)), 1)
+            if isinstance(j, list):
+                for p in j:
+                    nm = p.get('displayName')
+                    if nm and nm not in out and nm.upper() not in REACTOME_UMBRELLA: out.append(nm)
+        except Exception:
+            out = []
+    if not out and fallback:                       # ContentService down/empty → MyGene reactome
+        for nm in (fallback if isinstance(fallback, list) else [fallback]):
+            if nm and nm not in out and nm.upper() not in REACTOME_UMBRELLA: out.append(nm)
     return out[:cap]
 
 raw = open(APP).read()
@@ -108,7 +111,7 @@ for n in data['nodes']:
     if info.get('entrez'): n['entrez'] = info['entrez']
     if info.get('uniprot'): n['uniprot'] = info['uniprot']
     if info.get('mim'): n['mim'] = info['mim']
-    n['pathways'] = reactome_pathways(info.get('uniprot') or n.get('uniprot'))
+    n['pathways'] = reactome_pathways(info.get('uniprot') or n.get('uniprot'), fallback=info.get('pathways'))
     n['clinvar'] = _try(lambda: clinvar(n['sym']))
     hp = hpo(info.get('entrez') or n.get('entrez')); n['phenotypes'] = hp['terms']; n['phenoCount'] = hp['n']
     time.sleep(0.12)

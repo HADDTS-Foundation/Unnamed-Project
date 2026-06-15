@@ -16,7 +16,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 APP = os.path.join(HERE, '..', 'app-data.js')
 N = 20
 
-def _try(fn, n=3):
+def _try(fn, n=6):
     for k in range(n):
         try: return fn()
         except Exception:
