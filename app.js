@@ -279,14 +279,17 @@
     var list = displayed();
     hot.constellation = [];
 
-    // sector geometry: 6 area sectors (only 5 ever host a dominant; aging is overlay)
-    var sectors = {}; ORDER.forEach(function (k, i) { sectors[k] = { a0: (i / ORDER.length) * Math.PI * 2 - Math.PI / 2, idx: 0, n: 0 }; });
+    // The constellation maps GENES, placed by their dominant DISEASE area. Aging is
+    // an overlay (never a dominant area), so it gets NO sector — it shows as a gold
+    // longevity halo on the genes that are aging members (drawn with the nodes).
+    var SECTORS = ORDER.filter(function (k) { return k !== 'aging'; });   // 5 disease sectors
+    var sectors = {}; SECTORS.forEach(function (k, i) { sectors[k] = { a0: (i / SECTORS.length) * Math.PI * 2 - Math.PI / 2, idx: 0, n: 0 }; });
     list.forEach(function (p) { var k = p.dominant || 'oncology'; if (sectors[k]) sectors[k].n++; });
 
     // sector backdrops + labels
     if (state.layout === 'sector') {
-      ORDER.forEach(function (k, i) {
-        var a0 = (i / ORDER.length) * Math.PI * 2 - Math.PI / 2, a1 = ((i + 1) / ORDER.length) * Math.PI * 2 - Math.PI / 2;
+      SECTORS.forEach(function (k, i) {
+        var a0 = (i / SECTORS.length) * Math.PI * 2 - Math.PI / 2, a1 = ((i + 1) / SECTORS.length) * Math.PI * 2 - Math.PI / 2;
         g.beginPath(); g.moveTo(cx, cy); g.arc(cx, cy, R + 30, a0, a1); g.closePath();
         g.fillStyle = hexA(THEMES[k].theme, 0.045); g.fill();
         var am = (a0 + a1) / 2; g.fillStyle = hexA(THEMES[k].theme, 0.85);
@@ -300,7 +303,7 @@
       var ang, rad = R * (1 - 0.72 * (p.composite / 100));    // stronger → closer to hub
       if (state.layout === 'sector') {
         var s = sectors[p.dominant || 'oncology'];
-        var a0 = s.a0, span = (Math.PI * 2 / ORDER.length);
+        var a0 = s.a0, span = (Math.PI * 2 / SECTORS.length);
         ang = a0 + span * ((s.idx + 0.5) / Math.max(1, s.n)); s.idx++;
       } else {
         ang = (i / list.length) * Math.PI * 2 - Math.PI / 2;
@@ -317,36 +320,16 @@
       var q = pos[p.sym], r = nodeRadius(p), col = areaSolid(p.dominant);
       var strong = p.flags.some(function (fl) { return fl.sev >= 3; });
       if (strong) { var pulse = 0.5 + 0.5 * Math.sin(clock / 380); g.beginPath(); g.arc(q.x, q.y, r + 4 + pulse * 3, 0, 7); g.fillStyle = hexA(col, 0.10 * pulse); g.fill(); }
+      if (p.themes.aging !== undefined) {   // aging overlay: soft gold longevity halo (distinct from the crisp druggable ring)
+        var ha = g.createRadialGradient(q.x, q.y, r * 0.5, q.x, q.y, r + 11);
+        ha.addColorStop(0, hexA('#c8b560', 0.5)); ha.addColorStop(1, hexA('#c8b560', 0));
+        g.beginPath(); g.arc(q.x, q.y, r + 11, 0, 7); g.fillStyle = ha; g.fill();
+      }
       if (druggable(p.node)) { g.beginPath(); g.arc(q.x, q.y, r + 3.5, 0, 7); g.lineWidth = 1.6; g.strokeStyle = '#c8b560'; g.stroke(); }
       g.beginPath(); g.arc(q.x, q.y, r, 0, 7); g.fillStyle = col; g.fill();
       if (state.sel === p.sym) { g.lineWidth = 2; g.strokeStyle = '#fff'; g.stroke(); }
       hot.constellation.push({ sym: p.sym, x: q.x, y: q.y, r: r + 3 });
     });
-    // Aging/longevity is an overlay → no gene is ever "aging-dominant", so its
-    // sector would sit empty. For CtBP1 the aging signal is literature-carried,
-    // so render the curated ortholog-aware reading list (gene.agingRefs) as paper
-    // markers (gold diamonds) in that wedge — the slice then minimally carries the
-    // landmark C. elegans ctbp-1 life-span paper. Click → PubMed + the aging lens.
-    if (state.layout === 'sector') {
-      var ai = ORDER.indexOf('aging');
-      var aa0 = (ai / ORDER.length) * Math.PI * 2 - Math.PI / 2, aspan = Math.PI * 2 / ORDER.length;
-      var refs = GENE.agingRefs || [];
-      refs.forEach(function (rf, i) {
-        var frac = refs.length < 2 ? 0.5 : i / (refs.length - 1);
-        var aa = aa0 + aspan * (0.22 + 0.56 * frac), rr = R * 0.6;
-        var px = cx + Math.cos(aa) * rr, py = cy + Math.sin(aa) * rr, ps = 5;
-        g.strokeStyle = hexA('#c8b560', 0.16); g.lineWidth = 1; g.beginPath(); g.moveTo(cx, cy); g.lineTo(px, py); g.stroke();
-        g.beginPath(); g.moveTo(px, py - ps - 1); g.lineTo(px + ps, py); g.lineTo(px, py + ps + 1); g.lineTo(px - ps, py); g.closePath();
-        g.fillStyle = '#c8b560'; g.fill();
-        if (i === 0) { g.lineWidth = 1.5; g.strokeStyle = '#fff'; g.stroke(); }   // landmark paper highlighted
-        hot.constellation.push({ x: px, y: py, r: ps + 3, paper: rf, url: URLS.pubmedId(rf.pmid) });
-      });
-      if (refs.length) {
-        var la = aa0 + aspan * 0.5;
-        g.fillStyle = hexA('#c8b560', 0.78); g.font = '600 8px Inter'; g.textAlign = 'center'; g.textBaseline = 'middle';
-        g.fillText('READING LIST', cx + Math.cos(la) * (R * 0.93), cy + Math.sin(la) * (R * 0.93));
-      }
-    }
     // hub
     g.beginPath(); g.arc(cx, cy, 15, 0, 7); g.fillStyle = '#0f131e'; g.fill(); g.lineWidth = 2.5; g.strokeStyle = '#4ea8ff'; g.stroke();
     g.fillStyle = '#e7eefb'; g.font = '700 11px ' + MONO; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('CTBP1', cx, cy);
@@ -355,7 +338,11 @@
   var MONO = "ui-monospace,Menlo,monospace";
   function renderConstLegend() {
     var L = $('czLegend');
-    L.innerHTML = ORDER.map(function (k) { return '<div class="row"><span class="sw" style="background:' + THEMES[k].theme + '"></span>' + esc(THEMES[k].label.replace(/ \(.*\)/, '')) + '</div>'; }).join('') +
+    // 5 disease sectors place genes; aging + druggable are gene OVERLAYS (not sectors)
+    L.innerHTML = ORDER.filter(function (k) { return k !== 'aging'; }).map(function (k) {
+      return '<div class="row"><span class="sw" style="background:' + THEMES[k].theme + '"></span>' + esc(THEMES[k].label.replace(/ \(.*\)/, '')) + '</div>';
+    }).join('') +
+      '<div class="row" style="margin-top:3px"><span class="halo"></span>aging / longevity (overlay)</div>' +
       '<div class="row"><span class="ring"></span>druggable (gold ring)</div>';
   }
   function areaSolid(k) { return k && THEMES[k] ? THEMES[k].theme : '#5a6a8a'; }
@@ -420,20 +407,16 @@
     cv.addEventListener('mousemove', function (e) {
       var r = cv.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
       var hitNode = pick(which, mx, my);
-      if (hitNode && hitNode.paper) {
-        var rf = hitNode.paper; cv.style.cursor = 'pointer';
-        showTip(makePoint(e.clientX, e.clientY), '<b>Aging / longevity — curated paper</b><br>' + esc(rf.t || ('PMID ' + rf.pmid)) + '<br><span style="color:var(--on-surface-variant)">' + esc([rf.a, rf.j, rf.y].filter(Boolean).join(' · ')) + ' · click → PubMed</span>');
-      } else if (hitNode) {
+      if (hitNode) {
         var p = bySym[hitNode.sym]; cv.style.cursor = 'pointer';
-        showTip(makePoint(e.clientX, e.clientY), '<b>' + esc(p.sym) + '</b> · ' + esc(p.type) + '<br>composite <span class="num">' + p.composite.toFixed(0) + '</span>/100 · ' + (p.dominant ? esc(THEMES[p.dominant].label.replace(/ \(.*\)/, '')) : 'no area'));
+        var aging = p.themes.aging !== undefined ? ' · <span style="color:#c8b560">aging-linked</span>' : '';
+        showTip(makePoint(e.clientX, e.clientY), '<b>' + esc(p.sym) + '</b> · ' + esc(p.type) + '<br>composite <span class="num">' + p.composite.toFixed(0) + '</span>/100 · ' + (p.dominant ? esc(THEMES[p.dominant].label.replace(/ \(.*\)/, '')) : 'no area') + aging);
       } else { cv.style.cursor = 'default'; hideTip(); }
     });
     cv.addEventListener('mouseleave', hideTip);
     cv.addEventListener('click', function (e) {
       var r = cv.getBoundingClientRect(), hit = pick(which, e.clientX - r.left, e.clientY - r.top);
-      if (!hit) return;
-      if (hit.paper) { if (hit.url) window.open(hit.url, '_blank', 'noopener'); openLens('aging'); }   // open the paper + surface the aging reading list
-      else select(hit.sym);
+      if (hit) select(hit.sym);
     });
   }
   function pick(which, mx, my) {

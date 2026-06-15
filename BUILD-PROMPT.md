@@ -216,11 +216,13 @@ themeSummary, themeExposure, synthesis, findings, …`.
 - **Center — four views**:
   1. **Constellation** — CTBP1 at centre; interactors placed by dominant area (angular sector +
      colour) and connection strength (radius). Gold ring = druggable; pulse = strong area assoc.
-     Because **aging is an overlay** (never a gene's dominant area), the **Aging/longevity sector
-     hosts no genes** — instead it carries CtBP1's curated ortholog-aware reading list
-     (`gene.agingRefs`) as gold paper-markers (the slice must never be empty; it minimally shows the
-     landmark *C. elegans* `ctbp‑1` life-span paper, PMID 19164523, highlighted). Hovering a marker
-     shows the citation; clicking opens it in PubMed and surfaces the Aging/longevity lens.
+     Because **aging is an overlay** (never a gene's dominant area), the constellation has only the
+     **five disease sectors** — aging gets no sector of its own. Instead, the genes that *are* aging
+     members carry a soft **gold longevity halo** wherever they sit — an honest overlay (a property
+     of genes), visually distinct from the crisp gold druggable ring. Papers are **never** placed as
+     nodes in the gene map: CtBP1's curated ortholog-aware reading list (`gene.agingRefs`, incl. the
+     landmark *C. elegans* `ctbp‑1` life-span paper, PMID 19164523) lives in the Aging/longevity lens
+     dossier (§8), where literature belongs.
   2. **Network** — force layout revealing functional modules.
   3. **Table** — sortable evidence table.
   4. **Findings** — every (gene × area) membership, filterable by area chip, each row sourced
