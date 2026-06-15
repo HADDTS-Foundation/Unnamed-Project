@@ -99,7 +99,6 @@
     'vus': ['ClinVar VUS', 'Variants of uncertain significance (clinsig_vus filter).'],
     'comention': ['Co-mention tiers', 'Synonym-aware CTBP1 co-occurrence: in title, in title+abstract, and anywhere in full text. Each links to the exact Europe PMC query.'],
     'channels': ['STRING channels', 'Evidence channels behind the combined score: experiments, databases, text-mining, co-expression, fusion, neighborhood, co-occurrence.'],
-    'tract': ['Tractability', 'Open Targets druggability buckets (e.g. structure with ligand, known drugs) — a gold ring marks a druggable partner.'],
     'reactome': ['Reactome pathways', 'Specific leaf pathways mapped from UniProt, not broad umbrella categories.'],
     'hpo': ['HPO phenotypes', 'Human Phenotype Ontology clinical terms annotated to the gene (keyed by NCBI Gene id).'],
     'mech': ['Mechanism tags', 'Function-text tags (redox, chromatin, co-repression, Wnt/EMT, synaptic, apoptosis). NAD⁺/redox is a mechanism — not the Aging area.'],
@@ -271,10 +270,6 @@
     cv.width = Math.max(50, r.width) * DPR; cv.height = Math.max(50, r.height) * DPR;
     cv.style.width = r.width + 'px'; cv.style.height = r.height + 'px';
   }
-  function druggable(node) {
-    var t = (node.tract || []).join(' ').toLowerCase();
-    return /ligand|drug|clinical|antibody|small molecule|structure/.test(t);
-  }
   function nodeRadius(p) { return 4 + (p.composite / 100) * 7 + (p.type === 'Core complex' ? 2 : 0); }
 
   function drawConstellation() {
@@ -325,12 +320,11 @@
       var q = pos[p.sym], r = nodeRadius(p), col = areaSolid(p.dominant);
       var strong = p.flags.some(function (fl) { return fl.sev >= 3; });
       if (strong) { var pulse = 0.5 + 0.5 * Math.sin(clock / 380); g.beginPath(); g.arc(q.x, q.y, r + 4 + pulse * 3, 0, 7); g.fillStyle = hexA(col, 0.10 * pulse); g.fill(); }
-      if (p.themes.aging !== undefined) {   // aging overlay: soft gold longevity halo (distinct from the crisp druggable ring)
+      if (p.themes.aging !== undefined) {   // aging overlay: soft gold longevity halo (gold now denotes aging only)
         var ha = g.createRadialGradient(q.x, q.y, r * 0.5, q.x, q.y, r + 11);
         ha.addColorStop(0, hexA('#c8b560', 0.5)); ha.addColorStop(1, hexA('#c8b560', 0));
         g.beginPath(); g.arc(q.x, q.y, r + 11, 0, 7); g.fillStyle = ha; g.fill();
       }
-      if (druggable(p.node)) { g.beginPath(); g.arc(q.x, q.y, r + 3.5, 0, 7); g.lineWidth = 1.6; g.strokeStyle = '#c8b560'; g.stroke(); }
       g.beginPath(); g.arc(q.x, q.y, r, 0, 7); g.fillStyle = col; g.fill();
       if (state.sel === p.sym) { g.lineWidth = 2; g.strokeStyle = '#fff'; g.stroke(); }
       hot.constellation.push({ sym: p.sym, x: q.x, y: q.y, r: r + 3 });
@@ -343,12 +337,11 @@
   var MONO = "ui-monospace,Menlo,monospace";
   function renderConstLegend() {
     var L = $('czLegend');
-    // 5 disease sectors place genes; aging + druggable are gene OVERLAYS (not sectors)
+    // 5 disease sectors place genes; aging is a gene OVERLAY (gold halo), not a sector
     L.innerHTML = ORDER.filter(function (k) { return k !== 'aging'; }).map(function (k) {
       return '<div class="row"><span class="sw" style="background:' + THEMES[k].theme + '"></span>' + esc(THEMES[k].label.replace(/ \(.*\)/, '')) + '</div>';
     }).join('') +
-      '<div class="row" style="margin-top:3px"><span class="halo"></span>aging / longevity (overlay)</div>' +
-      '<div class="row"><span class="ring"></span>druggable (gold ring)</div>';
+      '<div class="row" style="margin-top:3px"><span class="halo"></span>aging / longevity (overlay)</div>';
   }
   function areaSolid(k) { return k && THEMES[k] ? THEMES[k].theme : '#5a6a8a'; }
 
@@ -400,7 +393,11 @@
     edges.forEach(function (e) { var a = netPos[e.a], b = netPos[e.b]; g.strokeStyle = hexA('#27395f', 0.18 + e.s * 0.5); g.lineWidth = 0.4 + e.s * 1.4; g.beginPath(); g.moveTo(a.x, a.y); g.lineTo(b.x, b.y); g.stroke(); });
     Object.keys(netPos).forEach(function (sym) {
       var q = netPos[sym], p = q.p, r = nodeRadius(p), col = areaSolid(p.dominant);
-      if (druggable(p.node)) { g.beginPath(); g.arc(q.x, q.y, r + 3, 0, 7); g.lineWidth = 1.5; g.strokeStyle = '#c8b560'; g.stroke(); }
+      if (p.themes.aging !== undefined) {   // aging overlay (gold halo), consistent with the constellation
+        var ha = g.createRadialGradient(q.x, q.y, r * 0.5, q.x, q.y, r + 10);
+        ha.addColorStop(0, hexA('#c8b560', 0.5)); ha.addColorStop(1, hexA('#c8b560', 0));
+        g.beginPath(); g.arc(q.x, q.y, r + 10, 0, 7); g.fillStyle = ha; g.fill();
+      }
       g.beginPath(); g.arc(q.x, q.y, r, 0, 7); g.fillStyle = col; g.fill();
       if (state.sel === sym) { g.lineWidth = 2; g.strokeStyle = '#fff'; g.stroke(); }
       hot.network.push({ sym: sym, x: q.x, y: q.y, r: r + 3 });

@@ -221,14 +221,17 @@ themeSummary, themeExposure, synthesis, findings, …`.
   draw, its own section with a one-line note), **Layout** toggle, **Trace connection**.
 - **Center — four views**:
   1. **Constellation** — CTBP1 at centre; interactors placed by dominant area (angular sector +
-     colour) and connection strength (radius). Gold ring = druggable; pulse = strong area assoc.
-     Because **aging is an overlay** (never a gene's dominant area), the constellation has only the
-     **five disease sectors** — aging gets no sector of its own. Instead, the genes that *are* aging
-     members carry a soft **gold longevity halo** wherever they sit — an honest overlay (a property
-     of genes), visually distinct from the crisp gold druggable ring. Papers are **never** placed as
-     nodes in the gene map: CtBP1's curated ortholog-aware reading list (`gene.agingRefs`, incl. the
-     landmark *C. elegans* `ctbp‑1` life-span paper, PMID 19164523) lives in the Aging/longevity lens
-     dossier (§8), where literature belongs.
+     colour) and connection strength (radius); pulse = strong area assoc. (No "druggable" indicator:
+     Open Targets *tractability* measures whether a molecule could engage a protein, not whether one
+     should — e.g. a tumour suppressor like p53 would be *restored*, not inhibited — and it flags
+     ~half the neighbourhood, so it carries little signal. The full tractability data stays one click
+     away via the gene's Open Targets link.) Because **aging is an overlay** (never a gene's dominant
+     area), the constellation has only the **five disease sectors** — aging gets no sector of its own.
+     Instead, the genes that *are* aging members carry a soft **gold longevity halo** wherever they
+     sit — an honest overlay (a property of genes); gold now denotes aging only. Papers are **never**
+     placed as nodes in the gene map: CtBP1's curated ortholog-aware reading list (`gene.agingRefs`,
+     incl. the landmark *C. elegans* `ctbp‑1` life-span paper, PMID 19164523) lives in the
+     Aging/longevity lens dossier (§8), where literature belongs.
   2. **Network** — force layout revealing functional modules.
   3. **Table** — sortable evidence table.
   4. **Findings** — every (gene × area) membership, filterable by area chip, each row sourced
