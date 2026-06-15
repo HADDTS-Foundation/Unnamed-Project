@@ -230,7 +230,17 @@
   // ======================================================================
   function renderInsight() {
     var s = ENGINE.synthesis(W);
-    $('insight').innerHTML = '<span class="lead">' + esc(s.lead) + '</span>';
+    $('insight').innerHTML = esc(s.lead);
+    var src = $('insightSrc');
+    if (src && !src.getAttribute('data-filled')) {           // static "what + sources" line — fill once
+      var SRC = [['STRING v12', 'https://string-db.org'], ['Open Targets', 'https://platform.opentargets.org'],
+        ['Europe PMC', 'https://europepmc.org'], ['IntAct', 'https://www.ebi.ac.uk/intact'],
+        ['ClinVar', 'https://www.ncbi.nlm.nih.gov/clinvar'], ['HPO', 'https://hpo.jax.org'],
+        ['Reactome', 'https://reactome.org'], ['GenAge / LongevityMap', 'https://genomics.senescence.info']];
+      src.innerHTML = '<b style="color:var(--on-surface)">' + analysis.length + ' STRING interactors</b> of human CTBP1 (top-250 by combined score) — fully offline; every value links to its live source. Snapshot ' + esc(META.date) + '. Sources: ' +
+        SRC.map(function (x) { return '<a href="' + x[1] + '" target="_blank" rel="noopener">' + esc(x[0]) + '</a>'; }).join(' · ') + '. <a href="https://github.com/HADDTS-Foundation/Unnamed-Project/blob/main/BUILD-PROMPT.md" target="_blank" rel="noopener">How it was built ↗</a>';
+      src.setAttribute('data-filled', '1');
+    }
   }
 
   // ======================================================================
@@ -790,7 +800,7 @@
   // header buttons + modal
   // ======================================================================
   function wireHeader() {
-    $('btnCopyAll').addEventListener('click', function () { copyText(aiForAll(), $('btnCopyAll')); });
+    var ibx = $('btnInsightClose'); if (ibx) ibx.addEventListener('click', function () { var b = $('insightBar'); if (b) b.classList.add('hidden'); });
     $('btnReanalyze').addEventListener('click', function () { reanalyse(); renderInsight(); renderLenses(); netReady = false; renderActiveView(); renderDiscoveries(); refreshDrawer(); flash($('btnReanalyze')); });
     $('btnHowto').addEventListener('click', openMethods);
     $('btnLive').addEventListener('click', liveProbe);

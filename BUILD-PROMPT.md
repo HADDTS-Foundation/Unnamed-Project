@@ -216,9 +216,12 @@ themeSummary, themeExposure, synthesis, findings, …`.
 ## 7. The UI (`app.js` + `index.html`)
 
 - **Header**: brand, gene ID chips, "How to read this" (methods/glossary), "Re-analyze",
-  "Live data" probe, and **⧉ Copy AI Context** (copies *every* AI block — hub + each lens + all
-  interactors — to the clipboard; same path as the per-gene Copy, no file download).
-- **Insight bar**: the synthesis lead.
+  "Live data" probe, and **⚙ How was this built** — a link to this `BUILD-PROMPT.md` on GitHub.
+  (Per-block AI copy stays on every drawer's `<pre>`; the global copy-all hook remains for automation
+  but is not a header button.)
+- **Insight bar**: the synthesis lead **plus a one-line "what it profiles + sources" caption** (top‑250
+  STRING interactors; STRING / Open Targets / Europe PMC / IntAct / ClinVar / HPO / Reactome /
+  GenAge, snapshot date, each linked). **Dismissable** via an ✕ close button.
 - **Left panel**: **Disease areas (lenses)** — the five disease lenses, then an *Overlay* divider and
   the Aging/longevity lens (toggle to recolour/filter), **Evidence weighting**
   (3 sliders: physical / literature / network), **Display limit** (how many top interactors to
@@ -346,8 +349,8 @@ subset, under `fonts/`, relative `file://` URLs — offline-safe, **no** web `@i
 - Opens offline from `file://` with no console errors; no network needed to function.
 - The five disease areas (+ the aging/longevity overlay) render as lenses/flags/findings; membership
   is provably data-driven (`verify.js` membership==recomputation checks pass).
-- Every shown value has a working source link; the AI blocks + Copy-AI-Context produce complete,
-  sourced plain text.
+- Every shown value has a working source link; the per-drawer AI blocks produce complete, sourced
+  plain text.
 - `data/verify.js` passes with **generic invariants only** (no pinned-gene assertions).
 - Inter actually renders (bundled), with the documented weight hierarchy and dark palette.
 - The engine contains no partner-gene special-casing (grep-clean per §2.3).

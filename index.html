@@ -106,13 +106,21 @@ header.bar{
 
 /* insight bar */
 .insight{
-  display:flex;align-items:center;gap:var(--s4);padding:11px var(--margin);
+  display:flex;align-items:flex-start;gap:var(--s4);padding:11px var(--margin);
   background:radial-gradient(120% 200% at 0% 0%,rgba(78,168,255,.07),transparent 60%),var(--sc-lowest);
   border-bottom:1px solid var(--outline-variant);min-height:46px;
 }
-.insight .dot{width:8px;height:8px;border-radius:50%;background:var(--primary);box-shadow:0 0 12px var(--primary);flex:none;}
+.insight.hidden{display:none;}
+.insight .dot{width:8px;height:8px;border-radius:50%;background:var(--primary);box-shadow:0 0 12px var(--primary);flex:none;margin-top:5px;}
+.insight .ibody{flex:1;min-width:0;}
 .insight .lead{font-size:13.5px;color:var(--on-surface);}
 .insight .lead b{font-weight:600;color:#fff;}
+.insight .srcline{font-size:11px;color:var(--on-surface-variant);margin-top:4px;line-height:1.5;}
+.insight .srcline a{color:var(--on-surface-variant);border-bottom:1px solid var(--outline);}
+.insight .srcline a:hover{color:var(--on-surface);text-decoration:none;}
+.insight .ibx{flex:none;width:22px;height:22px;border-radius:6px;color:var(--on-surface-variant);font-size:12px;line-height:1;background:transparent;border:1px solid transparent;cursor:pointer;}
+.insight .ibx:hover{background:var(--sc);border-color:var(--outline);color:var(--on-surface);}
+a.btn,a.btn:hover{text-decoration:none;}
 
 /* body grid */
 .body{display:grid;grid-template-columns:288px 1fr 384px;min-height:0;}
@@ -339,11 +347,11 @@ td .typ{font-size:11px;color:var(--on-surface-variant);}
     <button class="btn sm" id="btnHowto"><span class="k">ⓘ</span> How to read this</button>
     <button class="btn sm" id="btnReanalyze"><span class="k">↻</span> Re-analyze</button>
     <button class="btn sm" id="btnLive"><span class="k">◎</span> Live data</button>
-    <button class="btn sm primary" id="btnCopyAll"><span class="k">⧉</span> Copy AI Context</button>
+    <a class="btn sm primary" id="btnHowBuilt" href="https://github.com/HADDTS-Foundation/Unnamed-Project/blob/main/BUILD-PROMPT.md" target="_blank" rel="noopener"><span class="k">⚙</span> How was this built</a>
   </header>
 
   <!-- insight bar -->
-  <div class="insight"><span class="dot"></span><div class="lead" id="insight">Analyzing…</div></div>
+  <div class="insight" id="insightBar"><span class="dot"></span><div class="ibody"><div class="lead" id="insight">Analyzing…</div><div class="srcline" id="insightSrc"></div></div><button class="ibx" id="btnInsightClose" title="Dismiss this banner" aria-label="Dismiss">✕</button></div>
 
   <!-- body -->
   <div class="body">
