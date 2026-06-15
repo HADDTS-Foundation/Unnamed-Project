@@ -322,6 +322,31 @@
       if (state.sel === p.sym) { g.lineWidth = 2; g.strokeStyle = '#fff'; g.stroke(); }
       hot.constellation.push({ sym: p.sym, x: q.x, y: q.y, r: r + 3 });
     });
+    // Aging/longevity is an overlay → no gene is ever "aging-dominant", so its
+    // sector would sit empty. For CtBP1 the aging signal is literature-carried,
+    // so render the curated ortholog-aware reading list (gene.agingRefs) as paper
+    // markers (gold diamonds) in that wedge — the slice then minimally carries the
+    // landmark C. elegans ctbp-1 life-span paper. Click → PubMed + the aging lens.
+    if (state.layout === 'sector') {
+      var ai = ORDER.indexOf('aging');
+      var aa0 = (ai / ORDER.length) * Math.PI * 2 - Math.PI / 2, aspan = Math.PI * 2 / ORDER.length;
+      var refs = GENE.agingRefs || [];
+      refs.forEach(function (rf, i) {
+        var frac = refs.length < 2 ? 0.5 : i / (refs.length - 1);
+        var aa = aa0 + aspan * (0.22 + 0.56 * frac), rr = R * 0.6;
+        var px = cx + Math.cos(aa) * rr, py = cy + Math.sin(aa) * rr, ps = 5;
+        g.strokeStyle = hexA('#c8b560', 0.16); g.lineWidth = 1; g.beginPath(); g.moveTo(cx, cy); g.lineTo(px, py); g.stroke();
+        g.beginPath(); g.moveTo(px, py - ps - 1); g.lineTo(px + ps, py); g.lineTo(px, py + ps + 1); g.lineTo(px - ps, py); g.closePath();
+        g.fillStyle = '#c8b560'; g.fill();
+        if (i === 0) { g.lineWidth = 1.5; g.strokeStyle = '#fff'; g.stroke(); }   // landmark paper highlighted
+        hot.constellation.push({ x: px, y: py, r: ps + 3, paper: rf, url: URLS.pubmedId(rf.pmid) });
+      });
+      if (refs.length) {
+        var la = aa0 + aspan * 0.5;
+        g.fillStyle = hexA('#c8b560', 0.78); g.font = '600 8px Inter'; g.textAlign = 'center'; g.textBaseline = 'middle';
+        g.fillText('READING LIST', cx + Math.cos(la) * (R * 0.93), cy + Math.sin(la) * (R * 0.93));
+      }
+    }
     // hub
     g.beginPath(); g.arc(cx, cy, 15, 0, 7); g.fillStyle = '#0f131e'; g.fill(); g.lineWidth = 2.5; g.strokeStyle = '#4ea8ff'; g.stroke();
     g.fillStyle = '#e7eefb'; g.font = '700 11px ' + MONO; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('CTBP1', cx, cy);
@@ -395,7 +420,10 @@
     cv.addEventListener('mousemove', function (e) {
       var r = cv.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
       var hitNode = pick(which, mx, my);
-      if (hitNode) {
+      if (hitNode && hitNode.paper) {
+        var rf = hitNode.paper; cv.style.cursor = 'pointer';
+        showTip(makePoint(e.clientX, e.clientY), '<b>Aging / longevity — curated paper</b><br>' + esc(rf.t || ('PMID ' + rf.pmid)) + '<br><span style="color:var(--on-surface-variant)">' + esc([rf.a, rf.j, rf.y].filter(Boolean).join(' · ')) + ' · click → PubMed</span>');
+      } else if (hitNode) {
         var p = bySym[hitNode.sym]; cv.style.cursor = 'pointer';
         showTip(makePoint(e.clientX, e.clientY), '<b>' + esc(p.sym) + '</b> · ' + esc(p.type) + '<br>composite <span class="num">' + p.composite.toFixed(0) + '</span>/100 · ' + (p.dominant ? esc(THEMES[p.dominant].label.replace(/ \(.*\)/, '')) : 'no area'));
       } else { cv.style.cursor = 'default'; hideTip(); }
@@ -403,7 +431,9 @@
     cv.addEventListener('mouseleave', hideTip);
     cv.addEventListener('click', function (e) {
       var r = cv.getBoundingClientRect(), hit = pick(which, e.clientX - r.left, e.clientY - r.top);
-      if (hit) select(hit.sym);
+      if (!hit) return;
+      if (hit.paper) { if (hit.url) window.open(hit.url, '_blank', 'noopener'); openLens('aging'); }   // open the paper + surface the aging reading list
+      else select(hit.sym);
     });
   }
   function pick(which, mx, my) {
@@ -843,7 +873,7 @@
     if (/[?&]noboot\b/.test(location.search)) { intro.parentNode && intro.parentNode.removeChild(intro); }
     else setTimeout(function () { intro.classList.add('gone'); setTimeout(function () { intro.parentNode && intro.parentNode.removeChild(intro); }, 600); }, 1150);
     requestAnimationFrame(tickAnim);
-    window.CTBP1_APP = { select: select, openLens: openLens, state: state, copyAllContext: aiForAll };   // headless hook
+    window.CTBP1_APP = { select: select, openLens: openLens, state: state, copyAllContext: aiForAll, hot: hot };   // headless hook
   }
   function debounce(fn, ms) { var t; return function () { clearTimeout(t); t = setTimeout(fn, ms); }; }
 
