@@ -123,8 +123,8 @@ All reachable without keys. Each pipeline step parses `app-data.js` via
 | **UniProtKB** (`Q13363`) | function, NAD cofactor, complex membership, function-evidence PMIDs | |
 | **NCBI ClinVar** (eutils esearch, `retmode=json`) | per-gene P/LP · VUS · total variant counts | **Must** use the `[Filter]` tokens `clinsig_pathogenic`, `clinsig_likely_path`, `clinsig_vus` — NOT `[Clinical significance]` (Entrez maps that to free text → wrong counts). The in-app count links must mirror these exact tokens. |
 | **HPO** (`ontology.jax.org/api/network/annotation/NCBIGene:<entrez>`) | clinical-phenotype terms + count | hpo.jax.org deep links hard‑404 (client SPA). Link the count to the API response; offer a **Monarch** (`monarchinitiative.org/NCBIGene:<entrez>`) browse link. |
-| **Reactome ContentService** (`/data/mapping/UniProt/<acc>/pathways?species=9606`) | specific leaf pathways per gene | Do **not** use MyGene's `pathway.reactome` — it returns a flat list in arbitrary order that surfaces broad umbrellas. |
-| **GenAge + LongevityMap** (HAGR, `genomics.senescence.info`) | the data-driven **Aging / longevity** membership | GenAge human ageing genes + LongevityMap *significant* longevity-association genes; bundle `node.aging` with provenance (`why`/`id` or PubMed `pmids`). |
+| **Reactome ContentService** (`/data/mapping/UniProt/<acc>/pathways?species=9606`) | specific leaf pathways per gene | **Preferred** (specific leaves), but **fail-fast** — its endpoint can 5xx, so don't retry-storm it. MyGene's `pathway.reactome` is flat/arbitrary-order and surfaces broad umbrellas, so use it **only as a last-resort fallback when ContentService is unavailable, umbrella-filtered**. |
+| **GenAge + LongevityMap** (HAGR, `genomics.senescence.info`) | the data-driven **Aging / longevity** membership | GenAge human ageing genes + LongevityMap *significant* longevity-association genes; bundle `node.aging` with provenance (`why`/`id` or PubMed `pmids`). HAGR can hard-block these zips (415) — **degrade gracefully** (preserve existing `node.aging`), never crash the pipeline or wipe aging. |
 | **MyGene.info / NCBI Gene / GeneCards / Ensembl / PubMed / AlphaFold / PDBe / OMIM** | IDs, GO, deep links, structure models | watch for HGNC renames (symbol-scope lookups can `notfound`) and non-primary-assembly Ensembl IDs |
 
 Pipeline order (each rewrites `app-data.js`): `fetch_core → enrich → topup → netfetch → build_data →
@@ -243,8 +243,8 @@ themeSummary, themeExposure, synthesis, findings, …`.
 - **Right drawer** — three context-aware modes: gene dossier, disease-lens panel, CTBP1 hub
   dossier. A **disease-lens panel** shows the area's membership rule, its member genes ranked by
   strength, and — for the **Aging/longevity** lens only — the curated, ortholog-aware reading list
-  (`gene.agingRefs`, §8) clearly labelled as such. A gene dossier shows: connection meters, STRING channel bars, IntAct, **Disease areas**
-  (membership + provenance, area-coloured, no alarm icon), top disease associations, Literature
+  (`gene.agingRefs`, §8) clearly labelled as such. A gene dossier shows: connection meters, STRING channel bars, IntAct, **Area memberships**
+  (disease areas + aging, with provenance, area-coloured, no alarm icon), top disease associations, Literature
   (tiered co-mention rows linking to the exact Europe PMC query + the actual papers — no
   sub-heading over the paper list), Clinical variants (ClinVar), Clinical phenotypes (HPO), Pathways
   (Reactome), STRING connection, and "Open in databases" deep links.
