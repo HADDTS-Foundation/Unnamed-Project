@@ -119,7 +119,7 @@
 
   // partner↔partner edge index (for path())
   var EDGE_INDEX = {};
-  EDGES.forEach(function (e) { EDGE_INDEX[e.a + ' ' + e.b] = e.s; EDGE_INDEX[e.b + ' ' + e.a] = e.s; });
+  EDGES.forEach(function (e) { EDGE_INDEX[e.a + ' ' + e.b] = e.s; EDGE_INDEX[e.b + ' ' + e.a] = e.s; });
 
   var DEFAULT_W = { phys: 0.5, lit: 0.3, ctx: 0.2 };
 
@@ -351,7 +351,7 @@
       return { from: from, to: to, direct: true, weight: w, via: [HUB, sym], hub: true };
     }
     // partner ↔ partner: direct edge if present, else route through the hub
-    var key = from + ' ' + to;
+    var key = from + ' ' + to;
     if (EDGE_INDEX[key] !== undefined) {
       return { from: from, to: to, direct: true, weight: num(EDGE_INDEX[key]), via: [from, to] };
     }
@@ -382,10 +382,8 @@
       });
     }
 
-    // (a) strongest overall connections
-    ranked.slice(0, 4).forEach(function (p) {
-      add(p, 'strongest', 'Strongest composite connection (' + p.composite.toFixed(0) + '/100), typed "' + p.type + '"');
-    });
+    // (a) the single strongest overall connection ("strongest" is a superlative — exactly one)
+    if (ranked[0]) add(ranked[0], 'strongest', 'Strongest composite connection (' + ranked[0].composite.toFixed(0) + '/100), typed "' + ranked[0].type + '"');
 
     // (b) best exemplar per disease area (one gene per area)
     THEME_ORDER.forEach(function (key) {
@@ -402,7 +400,7 @@
     //     excluded — their raw counts are an artifact of the homograph, §8)
     ranked.slice().filter(function (p) { return !p.stop; })
       .sort(by(function (p) { return num(p.node.comention && p.node.comention.all); }))
-      .slice(0, 3).forEach(function (p) {
+      .slice(0, 1).forEach(function (p) {                    // "most" co-mentioned — one
         var all = num(p.node.comention && p.node.comention.all);
         if (all > 0) add(p, 'comention', 'Most co-mentioned with CTBP1 (' + all + ' papers, synonym-aware)');
       });
