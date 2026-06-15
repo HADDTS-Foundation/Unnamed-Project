@@ -87,7 +87,7 @@
   var GLOSS = {
     'tip-lenses': ['Disease areas + aging overlay', 'Five editorial <b>disease areas</b> (oncology, metabolic, neurodegeneration, CNS, neurodevelopment) — the constellation sectors — plus an <b>Aging / longevity overlay</b>, which is not a disease but a curated GenAge ∪ LongevityMap dimension shown as a gold halo. Which areas to show is editorial; which genes belong is decided only by the data. Toggle a lens to recolour and filter.'],
     'tip-weights': ['Evidence weighting', 'The composite score is a weighted blend of <b>Physical</b> (STRING experiments + curated databases — text-mining is deliberately excluded), <b>Literature</b> (synonym-aware CTBP1 co-mention), and <b>Network</b> (partner–partner context). Sliders re-rank live.'],
-    'tip-limit': ['Display limit', 'How many of the top-ranked interactors to draw in the visual views. The Table and Findings always include all 100.'],
+    'tip-limit': ['Display limit', 'How many of the top-ranked interactors to draw in the visual views. The Table and Findings always include every profiled interactor.'],
     'tip-trace': ['Trace connection', 'Every profiled gene is a direct STRING neighbour of CTBP1, so the trace is the direct edge — no spurious indirect detour through the corepressor hub clique.'],
     'composite': ['Composite connection', '100 × weighted mean of physical, literature and network sub-scores. Re-weight with the Evidence sliders.'],
     'phys': ['Physical', 'clamp(experiments + 0.5·curated-DB). STRING combined score is excluded so a text-only pair never reads as physical.'],
