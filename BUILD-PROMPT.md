@@ -231,7 +231,8 @@ from (every source linked), and *how it was built* — shown above the views, be
   linked), **dismissable** via an ✕ close button. (No synthesis sentence in the bar — `synthesis()`
   still feeds the hub AI block.)
 - **Left panel**: **Disease areas (lenses)** — the five disease lenses, then an *Overlay* divider and
-  the Aging/longevity lens (toggle to recolour/filter), **Evidence weighting**
+  the Aging/longevity lens — **click an area to focus it** (every view filters to just that area;
+  click the focused lens again to reset; the Findings area-chips mirror this), **Evidence weighting**
   (3 sliders: physical / literature / network), **Display limit** (how many top interactors to
   draw, its own section with a one-line note), **Layout** toggle, **Trace connection**.
 - **Center — four views**:
@@ -249,7 +250,8 @@ from (every source linked), and *how it was built* — shown above the views, be
      Aging/longevity lens dossier (§8), where literature belongs.
   2. **Network** — force layout revealing functional modules.
   3. **Table** — sortable evidence table.
-  4. **Findings** — every (gene × area) membership, filterable by area chip, each row sourced
+  4. **Findings** — every (gene × area) membership, filterable by area chip (the chips mirror the
+     left-panel lens focus, and vice-versa), each row sourced
      (OT disease+score, or GenAge/LongevityMap for aging).
 - **Right drawer** — three context-aware modes: gene dossier, disease-lens panel, CTBP1 hub
   dossier. A **disease-lens panel** shows the area's membership rule, its member genes ranked by

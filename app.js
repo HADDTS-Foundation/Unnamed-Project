@@ -87,7 +87,7 @@
   var GLOSS = {
     'tip-lenses': ['Disease areas + aging overlay', 'Five editorial <b>disease areas</b> (oncology, metabolic, neurodegeneration, CNS, neurodevelopment) — the constellation sectors — plus an <b>Aging / longevity overlay</b>, which is not a disease but a curated GenAge ∪ LongevityMap dimension shown as a gold halo. Which areas to show is editorial; which genes belong is decided only by the data. Toggle a lens to recolour and filter.'],
     'tip-weights': ['Evidence weighting', 'The composite score is a weighted blend of <b>Physical</b> (STRING experiments + curated databases — text-mining is deliberately excluded), <b>Literature</b> (synonym-aware CTBP1 co-mention), and <b>Network</b> (partner–partner context). Sliders re-rank live.'],
-    'tip-limit': ['Display limit', 'How many of the top-ranked interactors to draw in the visual views. The Table and Findings always include every profiled interactor.'],
+    'tip-limit': ['Display limit', 'How many of the top-ranked interactors to draw in the visual views. The Table and Findings ignore this slider; focus a lens (left panel) to filter them by area.'],
     'tip-trace': ['Trace connection', 'Every profiled gene is a direct STRING neighbour of CTBP1, so the trace is the direct edge — no spurious indirect detour through the corepressor hub clique.'],
     'composite': ['Composite connection', '100 × weighted mean of physical, literature and network sub-scores. Re-weight with the Evidence sliders.'],
     'phys': ['Physical', 'clamp(experiments + 0.5·curated-DB). STRING combined score is excluded so a text-only pair never reads as physical.'],
@@ -182,10 +182,11 @@
         '<span class="nm">' + esc(T.label) + '</span>' +
         '<span class="ct">' + (exposure[key] || 0) + '</span>';
       b.addEventListener('click', function () {
-        state.active[key] = !state.active[key];
-        b.setAttribute('aria-pressed', state.active[key] ? 'true' : 'false');
-        openLens(key);                       // clicking a lens also opens its dossier
-        renderActiveView();
+        // Click = FOCUS this area (show only it everywhere); click the sole-focused lens again = reset to all.
+        var sole = state.active[key] && ORDER.every(function (k) { return (k === key) ? state.active[k] : !state.active[k]; });
+        ORDER.forEach(function (k) { state.active[k] = sole ? true : (k === key); });
+        renderLenses();                      // refresh every lens's pressed/dimmed state
+        openLens(key); renderActiveView();   // open the dossier + re-filter the current view
       });
       box.appendChild(b);
     }
@@ -257,8 +258,9 @@
     else if (v === 'network') { sizeCanvas($('nz')); layoutNetwork(); drawNetwork(); }
     else if (v === 'table') renderTable();
     else if (v === 'findings') renderFindings();
-    if (v === 'table') $('viewMeta').textContent = analysis.length + ' genes';
-    else if (v === 'findings') $('viewMeta').textContent = ENGINE.findings(W).filter(function (r) { return !state.findingsArea || r.area === state.findingsArea; }).length + ' memberships';
+    var allOn = ORDER.every(function (k) { return state.active[k]; });
+    if (v === 'table') $('viewMeta').textContent = analysis.filter(lensOn).length + ' / ' + analysis.length + ' genes';
+    else if (v === 'findings') $('viewMeta').textContent = ENGINE.findings(W).filter(function (r) { return allOn || state.active[r.area]; }).length + ' memberships';
     else $('viewMeta').textContent = displayed().length + ' / ' + analysis.length + ' drawn';
   }
 
@@ -463,7 +465,7 @@
       th.addEventListener('click', function () { var k = th.getAttribute('data-k'); if (tableSort.key === k) tableSort.dir *= -1; else { tableSort.key = k; tableSort.dir = (k === 'sym' || k === 'type') ? 1 : -1; } renderTable(); });
     });
     var col = COLS.filter(function (c) { return c.k === tableSort.key; })[0];
-    var rows = analysis.slice().sort(function (a, b) { var va = col.get(a), vb = col.get(b); if (typeof va === 'string') return va < vb ? -tableSort.dir : va > vb ? tableSort.dir : 0; return (va - vb) * tableSort.dir; });
+    var rows = analysis.filter(lensOn).sort(function (a, b) { var va = col.get(a), vb = col.get(b); if (typeof va === 'string') return va < vb ? -tableSort.dir : va > vb ? tableSort.dir : 0; return (va - vb) * tableSort.dir; });
     tbody.innerHTML = '';
     rows.forEach(function (p) {
       var dots = p.flags.map(function (fl) { return '<span class="adot" style="background:' + fl.theme + '" title="' + esc(fl.label) + '"></span>'; }).join('');
@@ -490,11 +492,16 @@
   // ======================================================================
   function renderFindings() {
     var fb = $('findingsFilter');
-    fb.innerHTML = '<button class="fchip" data-a="" aria-pressed="' + (!state.findingsArea ? 'true' : 'false') + '">All areas</button>' +
-      ORDER.map(function (k) { return '<button class="fchip" data-a="' + k + '" aria-pressed="' + (state.findingsArea === k ? 'true' : 'false') + '"><span class="sw" style="background:' + THEMES[k].theme + '"></span>' + esc(THEMES[k].label.replace(/ \(.*\)/, '')) + '</button>'; }).join('');
-    fb.querySelectorAll('.fchip').forEach(function (c) { c.addEventListener('click', function () { state.findingsArea = c.getAttribute('data-a') || null; renderFindings(); }); });
+    var allOn = ORDER.every(function (k) { return state.active[k]; });          // same global filter as the left lenses
+    fb.innerHTML = '<button class="fchip" data-a="" aria-pressed="' + (allOn ? 'true' : 'false') + '">All areas</button>' +
+      ORDER.map(function (k) { return '<button class="fchip" data-a="' + k + '" aria-pressed="' + (!allOn && state.active[k] ? 'true' : 'false') + '"><span class="sw" style="background:' + THEMES[k].theme + '"></span>' + esc(THEMES[k].label.replace(/ \(.*\)/, '')) + '</button>'; }).join('');
+    fb.querySelectorAll('.fchip').forEach(function (c) { c.addEventListener('click', function () {
+      var a = c.getAttribute('data-a');
+      ORDER.forEach(function (k) { state.active[k] = a ? (k === a) : true; });  // a chip focuses that area; "All areas" resets
+      renderLenses(); renderFindings();                                         // keep the left lens panel in sync
+    }); });
 
-    var rows = ENGINE.findings(W).filter(function (r) { return !state.findingsArea || r.area === state.findingsArea; });
+    var rows = ENGINE.findings(W).filter(function (r) { return allOn || state.active[r.area]; });
     var wrap = $('findingsWrap'); wrap.innerHTML = '';
     rows.forEach(function (r) {
       var node = bySym[r.sym].node;
